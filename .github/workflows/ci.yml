@@ -1,0 +1,28 @@
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up mise
+        uses: jdx/mise-action@v3
+        with:
+          install: true
+      
+      - name: install dependencies
+        run: pnpm install
+
+      - name: run format check
+        run: pnpm exec biome format
+
+      - name: run lint check
+        run: pnpm exec biome lint
