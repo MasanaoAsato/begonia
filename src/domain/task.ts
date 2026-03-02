@@ -1,6 +1,6 @@
-import { TaskContent } from "./value_object/task_content";
-import { TaskId } from "./value_object/task_id";
-import { TaskTitle } from "./value_object/task_title";
+import type { TaskContent } from "./value_object/task_content";
+import type { TaskId } from "./value_object/task_id";
+import type { TaskTitle } from "./value_object/task_title";
 
 export interface Task {
 	id: TaskId;
