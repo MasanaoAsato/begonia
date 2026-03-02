@@ -1,5 +1,5 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { TaskAdd } from './pages/TaskAdd';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { TaskAdd } from "./pages/TaskAdd";
 
 function App() {
 	return (
@@ -8,7 +8,7 @@ function App() {
 				<Route path="/add" element={<TaskAdd />} />
 			</Routes>
 		</BrowserRouter>
-	)
+	);
 }
 
 export default App;
