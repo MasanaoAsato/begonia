@@ -71,3 +71,42 @@ export default defineConfig([
   },
 ])
 ```
+
+## ここから手書き
+
+## もろもろコマンド
+
+### 開発言語のインストール
+
+`mise install`
+
+### format
+
+`pnpm exec biome format --write`
+
+### lint
+
+`pnpm exec biome lint --write`
+
+### サーバーの起動
+
+`pnpm dev`
+
+## 構成
+
+### ページ構成（ルーティング）
+
+`react-router-dom` を利用しており、現在は以下のルートが定義されています。
+
+| パス | コンポーネント | 内容 |
+| :--- | :--- | :--- |
+| `/add` | `TaskAdd` | タスク追加ページ |
+
+### ディレクトリ構造
+
+- `src/pages/`: 各画面のコンポーネント
+- `src/domain/`: ビジネスロジック、ドメインモデル（Value Object など）
+- `src/api/`: 外部APIとの通信クライアント
+- `src/components/`: 再利用可能なUIコンポーネント
+- `src/utils/`: 共通ユーティリティ関数
+

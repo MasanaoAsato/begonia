@@ -24,11 +24,13 @@ export const TaskAdd = () => {
 			<form onSubmit={handleSubmit}>
 				<input
 					type="text"
+					aria-label="title"
 					value={title}
 					onChange={(e) => setTitle(e.target.value)}
 				/>
 				<input
 					type="text"
+					aria-label="content"
 					value={content}
 					onChange={(e) => setContent(e.target.value)}
 				/>
