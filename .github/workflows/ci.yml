@@ -5,7 +5,6 @@ on:
       - main
   workflow_dispatch:
 
-
 jobs:
   ci:
     runs-on: ubuntu-latest
@@ -17,7 +16,7 @@ jobs:
         uses: jdx/mise-action@v3
         with:
           install: true
-      
+
       - name: install dependencies
         run: pnpm install
 
@@ -26,3 +25,6 @@ jobs:
 
       - name: run lint check
         run: pnpm exec biome lint
+
+      - name: run test check
+        run: pnpm test
