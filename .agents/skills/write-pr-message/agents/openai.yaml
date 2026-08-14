@@ -1,0 +1,4 @@
+interface:
+  display_name: "PRメッセージ作成"
+  short_description: "PRテンプレートに沿って成果と価値を明朗簡潔に伝える"
+  default_prompt: "Use $write-pr-message to draft a concise Japanese pull request message."

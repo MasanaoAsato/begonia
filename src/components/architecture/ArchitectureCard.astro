@@ -1,0 +1,172 @@
+---
+import type { ArchitectureSummary } from '../../data/architectures';
+
+interface Props {
+	architecture: ArchitectureSummary;
+}
+
+const { architecture } = Astro.props;
+
+const cloudLabels = {
+	azure: 'Azure',
+	gcp: 'Google Cloud',
+	compare: 'Azure × GCP 比較',
+} satisfies Record<ArchitectureSummary['cloud'], string>;
+
+const themeLabels: Record<string, string> = {
+	web: 'Web / API',
+	container: 'コンテナ',
+	network: 'ネットワーク',
+	data: 'データ基盤',
+};
+---
+
+<article class:list={['architecture-card', `architecture-card--${architecture.cloud}`]}>
+	<div class="architecture-card__thumbnail" data-cloud={architecture.cloud} aria-hidden="true">
+		<span></span>
+		<span></span>
+		<span></span>
+	</div>
+	<div class="architecture-card__body">
+		<div class="architecture-card__badges">
+			<span class:list={['architecture-card__badge', `architecture-card__badge--${architecture.cloud}`]}>
+				{cloudLabels[architecture.cloud]}
+			</span>
+			{architecture.themes.map((theme) => (
+				<span class="architecture-card__badge architecture-card__badge--theme">
+					{themeLabels[theme] ?? theme}
+				</span>
+			))}
+		</div>
+		<h3>{architecture.title}</h3>
+		<p>{architecture.services.join(' · ')}</p>
+	</div>
+</article>
+
+<style>
+	.architecture-card {
+		overflow: hidden;
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+		background: var(--surface);
+	}
+
+	.architecture-card--compare {
+		border-width: 2px;
+		border-color: var(--accent);
+	}
+
+	.architecture-card__thumbnail {
+		display: flex;
+		height: 9.375rem;
+		align-items: center;
+		justify-content: center;
+		gap: 1.125rem;
+		border-bottom: 1px solid var(--border);
+		background: #f5f4f0;
+	}
+
+	.architecture-card__thumbnail span {
+		position: relative;
+		width: 3.25rem;
+		height: 2.125rem;
+		border: 1px solid var(--text-3);
+		border-radius: 0.3125rem;
+		background: var(--surface);
+	}
+
+	.architecture-card__thumbnail span:not(:last-child)::after {
+		position: absolute;
+		top: 50%;
+		left: calc(100% + 1px);
+		width: 1.125rem;
+		border-top: 1px solid var(--text-3);
+		content: '';
+	}
+
+	.architecture-card__thumbnail[data-cloud='azure'] span {
+		border-color: var(--azure);
+		background: var(--azure-bg);
+	}
+
+	.architecture-card__thumbnail[data-cloud='gcp'] span {
+		border-color: var(--gcp);
+		background: var(--gcp-bg);
+	}
+
+	.architecture-card__thumbnail[data-cloud='compare'] {
+		gap: 1.5rem;
+	}
+
+	.architecture-card__thumbnail[data-cloud='compare'] span:nth-child(1) {
+		border-color: var(--azure);
+		background: var(--azure-bg);
+	}
+
+	.architecture-card__thumbnail[data-cloud='compare'] span:nth-child(2) {
+		display: none;
+	}
+
+	.architecture-card__thumbnail[data-cloud='compare'] span:nth-child(3) {
+		border-color: var(--gcp);
+		background: var(--gcp-bg);
+	}
+
+	.architecture-card__thumbnail[data-cloud='compare'] span:nth-child(1)::after {
+		top: 1rem;
+		width: 1.5rem;
+		border-top-style: dashed;
+	}
+
+	.architecture-card__body {
+		padding: 1rem 1.125rem 1.125rem;
+	}
+
+	.architecture-card__badges {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.375rem;
+		margin-bottom: 0.625rem;
+	}
+
+	.architecture-card__badge {
+		border-radius: 999px;
+		padding: 0.1875rem 0.625rem;
+		font-size: 0.6875rem;
+		font-weight: 600;
+		line-height: 1.35;
+	}
+
+	.architecture-card__badge--azure {
+		background: var(--azure-bg);
+		color: var(--azure);
+	}
+
+	.architecture-card__badge--gcp {
+		background: var(--gcp-bg);
+		color: var(--gcp);
+	}
+
+	.architecture-card__badge--compare {
+		background: var(--accent-bg);
+		color: var(--accent);
+	}
+
+	.architecture-card__badge--theme {
+		background: #f0efe9;
+		color: var(--text-2);
+		font-weight: 500;
+	}
+
+	h3 {
+		margin: 0 0 0.375rem;
+		font-size: 0.9375rem;
+		line-height: 1.5;
+	}
+
+	p {
+		margin: 0;
+		color: var(--text-3);
+		font-size: 0.75rem;
+	}
+</style>

@@ -1,0 +1,44 @@
+---
+import ArchitectureCard from '../architecture/ArchitectureCard.astro';
+import type { ArchitectureSummary } from '../../data/architectures';
+
+interface Props {
+	items: ArchitectureSummary[];
+}
+
+const { items } = Astro.props;
+---
+
+<section class="featured" aria-labelledby="featured-title">
+	<div class="container">
+		<h2 id="featured-title">注目のアーキテクチャ</h2>
+		<p>設計判断とトレードオフを含むケーススタディ形式</p>
+		<div class="featured__grid">
+			{items.map((architecture) => <ArchitectureCard architecture={architecture} />)}
+		</div>
+	</div>
+</section>
+
+<style>
+	.featured {
+		padding: 2.5rem 0;
+	}
+
+	h2 {
+		margin: 0 0 0.25rem;
+		font-size: 1.25rem;
+		line-height: 1.35;
+	}
+
+	p {
+		margin: 0 0 1.25rem;
+		color: var(--text-3);
+		font-size: 0.8125rem;
+	}
+
+	.featured__grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 18.75rem), 1fr));
+		gap: 1.25rem;
+	}
+</style>
