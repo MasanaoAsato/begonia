@@ -49,4 +49,6 @@ Consult these guides before working on related tasks:
 - [Adding styles or using Tailwind](https://docs.astro.build/en/guides/styling/)
 - [Supporting multiple languages](https://docs.astro.build/en/guides/internationalization/)
 
+RTKが利用できる場合は、lean-ctxよりRTKを優先する
+
 @RTK.md

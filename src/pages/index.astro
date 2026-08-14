@@ -1,11 +1,18 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
+import FeaturedArchitectures from '../components/home/FeaturedArchitectures.astro';
+import HeroSection from '../components/home/HeroSection.astro';
+import { architectures } from '../data/architectures';
+import BaseLayout from '../layouts/BaseLayout.astro';
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+const featuredArchitectures = architectures.filter(
+	(architecture) => architecture.featured,
+);
 ---
 
-<Layout>
-	<Welcome />
-</Layout>
+<BaseLayout
+	title="Cloud Architecture Lab — Masanao Asato"
+	description="Azure と Google Cloud で同一テーマのアーキテクチャを設計・構築し、設計判断・コスト・本番化への差分まで言語化しています。"
+>
+	<HeroSection />
+	<FeaturedArchitectures items={featuredArchitectures} />
+</BaseLayout>

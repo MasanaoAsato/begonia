@@ -1,0 +1,93 @@
+<section class="hero" aria-labelledby="home-title">
+	<div class="container">
+		<p class="hero__eyebrow">Cloud infrastructure engineer</p>
+		<h1 id="home-title">
+			課題から逆算して設計する、<br />
+			アーキテクチャとIaCの実装カタログ
+		</h1>
+		<p class="hero__lead">
+			Azure と Google Cloud で同一テーマのアーキテクチャを設計・構築し、設計判断・コスト・本番化への差分まで言語化しています。すべての構成は Terraform で再現可能です。
+		</p>
+		<dl class="hero__stats">
+			<div>
+				<dt>アーキテクチャ</dt>
+				<dd>12</dd>
+			</div>
+			<div>
+				<dt>クラウド (Azure / GCP)</dt>
+				<dd>2</dd>
+			</div>
+			<div>
+				<dt>Terraform管理</dt>
+				<dd>100%</dd>
+			</div>
+			<div>
+				<dt>Qiita記事</dt>
+				<dd>29+</dd>
+			</div>
+		</dl>
+	</div>
+</section>
+
+<style>
+	.hero {
+		padding: 4.5rem 0 3.5rem;
+	}
+
+	.hero__eyebrow {
+		margin: 0;
+		color: var(--accent);
+		font-size: 0.8125rem;
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+	}
+
+	h1 {
+		margin: 0.75rem 0 1rem;
+		font-size: clamp(1.625rem, 4vw, 2.125rem);
+		letter-spacing: 0.01em;
+		line-height: 1.35;
+	}
+
+	.hero__lead {
+		max-width: 40rem;
+		margin: 0;
+		color: var(--text-2);
+	}
+
+	.hero__stats {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 1.5rem 2.5rem;
+		margin: 2.25rem 0 0;
+	}
+
+	.hero__stats div {
+		display: grid;
+	}
+
+	.hero__stats dt {
+		order: 2;
+		color: var(--text-3);
+		font-size: 0.8125rem;
+	}
+
+	.hero__stats dd {
+		order: 1;
+		margin: 0;
+		font-size: 1.625rem;
+		font-weight: 700;
+		line-height: 1.35;
+	}
+
+	@media (max-width: 720px) {
+		.hero {
+			padding: 3.5rem 0 2.75rem;
+		}
+
+		.hero__stats {
+			gap: 1.25rem 2rem;
+		}
+	}
+</style>
