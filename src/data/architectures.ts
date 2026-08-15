@@ -7,6 +7,7 @@ export interface ArchitectureSummary {
 	title: string;
 	services: string[];
 	featured: boolean;
+	detailId?: string;
 }
 
 export const architectures: ArchitectureSummary[] = [
@@ -22,16 +23,17 @@ export const architectures: ArchitectureSummary[] = [
 		id: 'gcp-serverless-api',
 		cloud: 'gcp',
 		themes: ['web'],
-		title: 'サーバーレスAPI基盤',
-		services: ['Cloud Run', 'Pub/Sub', 'Firestore'],
+		title: 'Cloud RunをLB経由で公開し、入口を一つに絞る',
+		services: ['Cloud Run', 'Load Balancing', 'Cloud Armor'],
 		featured: true,
+		detailId: 'google-cloud/01',
 	},
 	{
 		id: 'azure-gcp-web-comparison',
 		cloud: 'compare',
 		themes: ['web'],
 		title: '同一要件をどう組むか: Web編',
-		services: ['Azure × GCP 徹底比較'],
+		services: ['Azure × Google Cloud 徹底比較'],
 		featured: true,
 	},
 ];
