@@ -7,7 +7,14 @@
 	},
 	"files": {
 		"ignoreUnknown": true,
-		"includes": ["src/**/*", "astro.config.mjs", "tsconfig.json", "package.json", "biome.json"]
+		"includes": [
+			"src/**/*",
+			"!src/content/architectures/**/*.svg",
+			"astro.config.mjs",
+			"tsconfig.json",
+			"package.json",
+			"biome.json"
+		]
 	},
 	"formatter": {
 		"enabled": true,

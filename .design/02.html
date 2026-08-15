@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>02: Google Cloudカードから内部ケーススタディ詳細へ接続 設計書</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f7f8fa;
+      --surface: #ffffff;
+      --text: #182230;
+      --muted: #596579;
+      --border: #d7dde5;
+      --accent: #275dad;
+      --current: #166534;
+      --current-bg: #ecfdf3;
+      --proposed: #92400e;
+      --proposed-bg: #fff7ed;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 16px/1.65 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    main {
+      width: min(900px, calc(100% - 2rem));
+      margin: 2rem auto;
+      padding: clamp(1.25rem, 4vw, 3rem);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    h1, h2, h3 { line-height: 1.25; }
+    h2 { margin-top: 2.5rem; border-bottom: 1px solid var(--border); padding-bottom: .4rem; }
+    h3 { margin-top: 1.75rem; }
+    nav { display: flex; flex-wrap: wrap; gap: .75rem; margin: 1.25rem 0 2rem; }
+    a { color: var(--accent); }
+    code { padding: .1rem .35rem; border-radius: 4px; background: color-mix(in srgb, var(--border) 45%, transparent); }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: .55rem .7rem; border: 1px solid var(--border); text-align: left; vertical-align: top; }
+    th { background: color-mix(in srgb, var(--border) 28%, transparent); }
+    .table-wrap { overflow-x: auto; }
+    .state, .decision { border-left: 4px solid; padding: .75rem 1rem; margin: 1rem 0; }
+    .current { border-color: var(--current); background: var(--current-bg); color: #153e27; }
+    .proposed { border-color: var(--proposed); background: var(--proposed-bg); color: #4b2a12; }
+    .decision { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--surface)); }
+    .state strong, .decision strong { display: block; }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111827;
+        --surface: #182230;
+        --text: #eef2f7;
+        --muted: #bac4d2;
+        --border: #3c4859;
+        --accent: #8db7ff;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>02: Google Cloudカードから内部ケーススタディ詳細へ接続 設計書</h1>
+      <nav aria-label="Document sections">
+        <a href="#goal">Goal</a>
+        <a href="#design">Design</a>
+        <a href="#file-map">Files</a>
+        <a href="#implementation">Implementation</a>
+        <a href="#verification">Verification</a>
+      </nav>
+    </header>
+
+    <section id="goal">
+      <h2>Goal</h2>
+      <ul>
+        <li><strong>Outcome:</strong> HomeのGoogle Cloud注目カードをクリックするとbegonia内のケーススタディ詳細へ移動し、構成図、想定シナリオ、設計判断、コスト、セキュリティと運用、本番化との差分を読める。GitHubは詳細ページから実装と出典を確認する副導線になる。</li>
+        <li><strong>Reason:</strong> 現在の外部GitHubリンクだけでは、<code>.design/first-mock/portfolio_prototype.html</code>が示す「カードからポートフォリオ内で設計内容を読む」体験を満たさないため。</li>
+        <li><strong>Scope:</strong> <code>google-cloud-learning/architectures/01</code>を出典とするGoogle Cloud注目カード1件、静的な内部詳細ルート、begonia向けに編集したケーススタディ本文、ローカル保持する構成図、出典コミットへのGitHubリンクを対象にする。</li>
+        <li><strong>Out of scope:</strong> Azure・比較カードの詳細、Architecture Catalog、クラウド比較ページ、learningリポジトリの変更、GitHub APIや外部HTMLを使う自動同期、<code>summary.html</code>の埋め込み、CMS、実行時の外部通信。</li>
+      </ul>
+    </section>
+
+    <section id="design">
+      <h2>Design</h2>
+
+      <h3 id="decision">採用判断</h3>
+      <div class="decision">
+        <strong>採用: ローカルの編集済みスナップショットから静的な詳細ページを生成する</strong>
+        <p>カードの主導線は同一タブの内部ページとし、GitHubを直接開かない。ケーススタディ本文と構成図は同じ出典コミットからbegoniaへ取り込み、ポートフォリオの読者向けに再構成する。Astroのビルド中や閲覧時にはGitHubへ取得に行かない。</p>
+      </div>
+      <p><code>README.md</code>はケーススタディの意味上の原本、<code>architecture.svg</code>は構成図の原本とする。<code>summary.html</code>は同じ情報から作られた独立した閲覧物であり、CSSやJavaScriptを含む任意HTMLをbegoniaへ持ち込まないため、取込元にはしない。</p>
+
+      <h3 id="delta">導入前から02で導入する状態への変更</h3>
+      <div class="state current">
+        <strong>導入前の基準（02で置き換える状態）</strong>
+        <p><code>src/data/architectures.ts</code>の<code>ArchitectureSummary.source</code>と<code>getArchitectureSourceUrl()</code>がGoogle Cloud 01の<code>main</code>ディレクトリURLを所有する。<code>ArchitectureCard.astro</code>はカード自体を<code>&lt;article&gt;</code>として描画し、その末尾に「Google Cloudの実装を見る」という外部リンクを置く。</p>
+        <p><code>src/pages/</code>にはHomeだけがあり、Content Collection、ケーススタディ本文、構成図アセット、詳細ルートはない。<code>astro.config.mjs</code>にadapterや<code>output</code>指定はなく、現在のサイトはAstro既定の静的出力である。</p>
+      </div>
+      <div class="state proposed">
+        <strong>02で導入する状態</strong>
+        <p>Google Cloudカード全体を<code>/architectures/google-cloud/01/</code>への内部リンクにし、カード内のGitHub外部リンクを取り除く。詳細はローカルのContent Collectionから静的生成し、ページ末尾で取り込み元の固定コミットへリンクする。Azure・比較カードは詳細未接続の<code>&lt;article&gt;</code>を維持する。</p>
+      </div>
+
+      <h3 id="file-map">要件と対応ファイル</h3>
+      <p>各要件を確認・変更するときは、まず次の主担当ファイルを読む。<strong>変更なし</strong>は、この設計で利用するが02の変更対象ではない既存ファイルを表す。</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>要件</th><th>主担当ファイル</th><th>責務</th><th>02での扱い</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>カードと詳細の結合キー、Google Cloud 01の表示データ</td><td><code>src/data/architectures.ts</code></td><td><code>ArchitectureSummary.detailId</code>と<code>architectures</code>が、カードから詳細エントリへ渡すIDを所有する。</td><td>変更</td></tr>
+            <tr><td>カード全体の内部リンク、CTA、キーボードフォーカス</td><td><code>src/components/architecture/ArchitectureCard.astro</code></td><td><code>detailId</code>の有無で<code>&lt;a&gt;</code>と<code>&lt;article&gt;</code>を切り替え、カード内の対話要素をこのコンポーネントに閉じる。</td><td>変更</td></tr>
+            <tr><td>詳細コンテンツのfrontmatter契約とローカル画像の検証</td><td><code>src/content.config.ts</code></td><td><code>architectureDetails</code> Collection、<code>source</code>、<code>diagram</code>、<code>diagramAlt</code>のschemaを所有する。</td><td>新規</td></tr>
+            <tr><td>Google Cloud 01の読者向け本文と出典メタデータ</td><td><code>src/content/architectures/google-cloud/01.md</code></td><td>必須<code>h2</code>、<code>description</code>、固定コミットの<code>source</code>、構成図参照を所有する。</td><td>新規</td></tr>
+            <tr><td>Google Cloud 01のローカル構成図</td><td><code>src/content/architectures/google-cloud/01.svg</code></td><td>Markdownの<code>diagram</code>が参照する、出典コミット由来の画像アセットを所有する。</td><td>新規</td></tr>
+            <tr><td>静的URLの生成、結合・見出し検証、詳細ページの描画</td><td><code>src/pages/architectures/[...id].astro</code></td><td><code>getStaticPaths()</code>でカードとCollectionを照合し、<code>Content</code>、構成図、固定コミットへのGitHubリンクを表示する。</td><td>新規</td></tr>
+            <tr><td>詳細ページの共通HTML、meta description、Homeへの復帰先</td><td><code>src/layouts/BaseLayout.astro</code></td><td>詳細ルートが再利用する共通レイアウトを所有する。</td><td>変更なし</td></tr>
+            <tr><td>Homeからカードへ渡すProps境界</td><td><code>src/components/home/FeaturedArchitectures.astro</code></td><td><code>ArchitectureCard</code>へ<code>ArchitectureSummary</code>を渡すだけとし、URLの組み立てを持たない。</td><td>変更なし</td></tr>
+            <tr><td>Home上のクラウド名の表記統一</td><td><code>src/components/home/HeroSection.astro</code></td><td>統計ラベルの<code>GCP</code>表記を<code>Google Cloud</code>へ合わせる。</td><td>変更</td></tr>
+            <tr><td>取り込んだSVGの整形対象からの除外</td><td><code>biome.json</code></td><td>出典どおりに保持する<code>src/content/architectures/**/*.svg</code>をBiomeの対象外にする。</td><td>変更</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="unit-and-growth">カードの単位と増え方</h3>
+      <p>この設計でいう1件の単位は、learningリポジトリの<code>architectures/{architectureId}</code>に対応する<strong>1アーキテクチャ・ケーススタディ</strong>である。1件につきカード1枚、詳細エントリ1件、詳細URL 1本を持つ。同じ分類に属する複数アーキテクチャを1枚のカードへまとめない。</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>概念</th><th>役割と多重度</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>アーキテクチャ</td><td>カードと詳細ページの所有単位。<code>{provider, architectureId}</code>の組を一意とし、1アーキテクチャ = 1カード = 1詳細エントリとする。</td></tr>
+            <tr><td><code>themes</code></td><td>現在のコードでWeb / API、コンテナ、ネットワークなどを表す分類タグ。カードの所有単位ではなく、1カードが複数タグを持て、同じタグを複数カードが共有できる。画面と設計上は「分類タグ」と呼ぶ。</td></tr>
+            <tr><td><code>featured</code></td><td>Homeへ掲載するかを決める表示属性。アーキテクチャの存在や詳細ページの有無を表さない。件数が増えてもHomeは<code>featured: true</code>のカードだけを表示する。</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>内部詳細IDは<code>{公開用provider名}/{architectureId}</code>とする。<code>gcp</code>の公開用provider名は<code>google-cloud</code>、<code>azure</code>は<code>azure</code>である。タイトルや採用サービスが後から変わってもURLを変えず、クラウド間の同じ番号も衝突させないためである。たとえばGoogle Cloud 01・02はそれぞれ<code>/architectures/google-cloud/01/</code>、<code>/architectures/google-cloud/02/</code>となり、同じ「Web / API」分類でも別カード・別ページになる。Azure 02は<code>/architectures/azure/02/</code>となる。</p>
+
+      <h3 id="flow">カードとルート</h3>
+      <ul>
+        <li><code>ArchitectureSummary</code>は任意の<code>detailId</code>を持つ。Google Cloudカードには<code>google-cloud/01</code>を設定し、出典情報は詳細コンテンツへ移す。既存のカード<code>id</code>は表示データの識別子として維持し、URLには使わない。</li>
+        <li><code>detailId</code>があるカードは、カード全体を単一の<code>&lt;a&gt;</code>で包み、同一タブの<code>/architectures/{detailId}/</code>へ遷移する。カード末尾にはリンク内の非対話要素として「ケーススタディを読む →」を表示する。</li>
+        <li>カード内に別のリンクやクリックハンドラーを置かない。リンクのアクセシブルネームはカードタイトルとし、ホバーだけでなく<code>:focus-visible</code>でもカード全体の選択状態を示す。</li>
+        <li><code>detailId</code>がないAzure・比較カードはリンク、CTA、ポインターカーソルを持たない。これは02以前からある未接続モックの移行状態だけに許し、今後新しい実在アーキテクチャのカードを追加するときは同じ変更で詳細エントリも追加する。</li>
+        <li><code>src/pages/architectures/[...id].astro</code>は<code>getStaticPaths()</code>で詳細エントリだけを列挙する。未登録IDのHTMLは生成せず、クライアント側ルーターやJavaScriptは追加しない。</li>
+      </ul>
+
+      <h3 id="content-contract">詳細コンテンツ契約</h3>
+      <p><code>src/content.config.ts</code>に<code>architectureDetails</code>を定義し、<code>src/content/architectures/**/*.md</code>を<code>glob()</code>で読む。エントリIDは<code>src/content/architectures/</code>からの相対パスとし、<code>ArchitectureSummary.detailId</code>との結合キーにする。Google Cloud 01は<code>src/content/architectures/google-cloud/01.md</code>が所有する。</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>所有先・フィールド</th><th>契約</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>ArchitectureSummary.detailId?</code></td><td>対応する<code>architectureDetails</code>のエントリID。省略は既存の未接続モックに限り、出典のある新規アーキテクチャカードでは必須とする。</td></tr>
+            <tr><td><code>description</code></td><td>詳細ページの導入文とmeta descriptionに使う、空でない文字列。カードのタイトルやサービス一覧は重複保持しない。</td></tr>
+            <tr><td><code>source</code></td><td><code>provider: 'gcp' | 'azure'</code>、<code>owner: 'MasanaoAsato'</code>、providerに対応する<code>repository</code>、空でない<code>architectureId</code>、40桁の小文字16進数<code>revision</code>を持つ。<code>gcp</code>は<code>google-cloud-learning</code>、<code>azure</code>は<code>azure-learning</code>だけを許可する。<code>revision</code>は取り込んだREADMEとSVGが存在する<code>main</code>のコミットとする。</td></tr>
+            <tr><td><code>diagram</code> / <code>diagramAlt</code></td><td><code>diagram</code>は同じディレクトリのローカル画像をAstroの<code>image()</code>で検証する。<code>diagramAlt</code>は図から読み取れる公開経路を説明する空でない日本語文字列とする。</td></tr>
+            <tr><td>Markdown本文</td><td>ページの<code>h1</code>はテンプレートが所有するため、本文は<code>h2</code>から始める。必須見出しは「想定シナリオ」「設計判断」「コスト試算」「セキュリティと運用」「学習スコープと本番化への差分」とし、この順に各1件置く。</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><code>getStaticPaths()</code>は、各詳細エントリを参照する<code>ArchitectureSummary.detailId</code>が1件だけあり、entry IDが<code>source.provider</code>から得る公開用provider名と<code>source.architectureId</code>の組に一致することを検証する。逆に、すべての<code>detailId</code>にも詳細エントリが必要である。さらに<code>render(entry).headings</code>の深さ2の見出しを上記の必須見出しと順序まで照合する。いずれかが不一致なら、重複カード、リンク切れ、不完全なケーススタディを公開しないようビルドを失敗させる。</p>
+
+      <h3 id="source-processing">出典の取得と編集</h3>
+      <p>公開済みの<code>main</code>から取込対象の1コミットを固定し、次の対応で取り込む。取得と編集はbegoniaの変更としてレビューし、自動同期は行わない。</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>出典</th><th>begoniaでの扱い</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>architectures/01/README.md</code>の導入・想定シナリオ</td><td><code>description</code>と「想定シナリオ」へ要約する。公開対象、独自ドメイン、LB経由限定、学習用の一時構成という前提を落とさない。</td></tr>
+            <tr><td>READMEの<code>ADR-001</code>〜<code>ADR-003</code></td><td>各ADRの背景、決定、比較、影響を「設計判断」に残す。Terraformコードから新しい理由を推測して追加しない。</td></tr>
+            <tr><td>READMEのコスト試算</td><td>計算基準日、3時間、リクエスト数、通信量、除外費用、常設時の比較を一体で保持する。金額だけを切り出さない。</td></tr>
+            <tr><td>READMEのセキュリティ、確認と削除、テーマの範囲、学び</td><td>実装済みの制御と対象外の認証・高可用性・継続監視を区別し、「セキュリティと運用」「学習スコープと本番化への差分」へ再構成する。</td></tr>
+            <tr><td><code>architectures/01/architecture.svg</code></td><td>READMEと同じコミットのファイルを<code>src/content/architectures/google-cloud/01.svg</code>へ保存する。外部URLで表示せず、インライン展開もしない。</td></tr>
+            <tr><td><code>architectures/01/summary.html</code>とTerraform一式</td><td>本文として取り込まない。Terraformは詳細ページ末尾のGitHub出典リンクから参照させる。</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>出典更新を反映するときは、README、SVG、編集済みMarkdown、<code>source.revision</code>を同じbegonia変更で更新する。本文だけ、または図だけを別コミット由来にしない。</p>
+
+      <h3 id="detail-page">詳細ページ表示</h3>
+      <ul>
+        <li><code>BaseLayout.astro</code>を使い、meta titleは「{カードタイトル} | Cloud Architecture Lab」、meta descriptionはエントリの<code>description</code>とする。</li>
+        <li>冒頭はHomeへ戻るパンくず、Google Cloudと分類タグのバッジ、カードと同じ<code>h1</code>、導入文を表示する。未実装のCatalogへのリンクは置かない。</li>
+        <li>構成図はローカルアセットを通常の画像として表示し、<code>diagramAlt</code>を代替テキストに使う。SVGをページDOMへインライン展開しない。</li>
+        <li>構成図の後にMarkdown本文を描画する。数値を含むコストは表、各ADRは<code>h3</code>以下のまとまりとして、狭い画面でも横スクロールまたは折返しで欠落なく読めるようにする。</li>
+        <li>末尾に「GitHubで実装と出典を見る ↗」を置き、<code>source.revision</code>を使う<code>https://github.com/{owner}/{repository}/tree/{revision}/architectures/{architectureId}</code>へリンクする。新しいタブで開き、<code>rel="noopener noreferrer"</code>を付ける。</li>
+      </ul>
+
+      <h3 id="failure-compatibility">失敗時と互換性</h3>
+      <ul>
+        <li>Content Collectionのschema違反、画像欠落、summaryとdetailの結合不一致、必須<code>h2</code>欠落はビルドエラーにする。</li>
+        <li>GitHubの障害や削除は既に生成された詳細ページと構成図の表示へ影響させない。外部リンク到達性はビルド条件にせず、固定コミットがGitHubから消えた場合は次のbegonia変更で出典を修正する。</li>
+        <li><code>FeaturedArchitectures</code>から<code>ArchitectureCard</code>へ渡すProps境界は維持し、呼び出し側でURLを組み立てない。</li>
+        <li>既存の<code>id</code>、カードタイトル、サービス、バッジ、Homeのカード配置は維持する。内部識別子<code>gcp</code>も改名しない。</li>
+      </ul>
+    </section>
+
+    <section id="implementation">
+      <h2>Implementation</h2>
+      <ol>
+        <li><strong>出典を確定:</strong> 公開済みの<code>google-cloud-learning/main</code>から、Google Cloud 01のREADMEとSVGを含むコミットの完全SHAを確定する。</li>
+        <li><strong>ローカルコンテンツを作成:</strong> 同じSHAからREADMEとSVGを取得し、schemaに従うMarkdownへ編集してbegoniaへ保存する。</li>
+        <li><strong>静的詳細を接続:</strong> Content Collection、結合検証、動的ルート、詳細表示を追加してから、カードの外部リンクを内部リンクへ置き換える。これにより、カードが先に未生成ページを指す中間状態を作らない。</li>
+      </ol>
+    </section>
+
+    <section id="verification">
+      <h2>Verification</h2>
+      <ul>
+        <li><code>pnpm build</code>が成功し、<code>dist/architectures/google-cloud/01/index.html</code>が生成される。</li>
+        <li>HomeのGoogle Cloudカード全体が<code>/architectures/google-cloud/01/</code>への単一の内部リンクになり、GitHub URL、<code>target="_blank"</code>、入れ子のリンク、JavaScriptのクリック処理を含まない。</li>
+        <li>Azure・比較カードはリンクとCTAを持たず、既存のタイトル、サービス、バッジ、配置を維持する。</li>
+        <li>内部詳細に構成図と5つの必須セクションがあり、画像URLはbegoniaのビルド成果物を指してGitHubやraw.githubusercontent.comを指さない。</li>
+        <li>カードタイトルが詳細の<code>h1</code>とmeta titleに反映され、<code>description</code>が導入文とmeta descriptionに反映される。</li>
+        <li>詳細末尾のGitHubリンクが登録した40桁SHAと<code>architectures/01</code>を指し、READMEとSVGの取得元コミットに一致する。</li>
+        <li>カードと詳細ページの全リンクをキーボードだけで識別して操作でき、狭い画面でも構成図、ADR、コスト表の内容が欠落しない。</li>
+        <li>GitHubへ接続できない環境でも、依存関係が導入済みならビルドとローカル詳細表示が成功する。</li>
+      </ul>
+    </section>
+  </main>
+</body>
+</html>

@@ -10,7 +10,7 @@ const { architecture } = Astro.props;
 const cloudLabels = {
 	azure: 'Azure',
 	gcp: 'Google Cloud',
-	compare: 'Azure × GCP 比較',
+	compare: 'Azure × Google Cloud 比較',
 } satisfies Record<ArchitectureSummary['cloud'], string>;
 
 const themeLabels: Record<string, string> = {
@@ -19,36 +19,94 @@ const themeLabels: Record<string, string> = {
 	network: 'ネットワーク',
 	data: 'データ基盤',
 };
+
+const detailUrl = architecture.detailId
+	? `/architectures/${architecture.detailId}/`
+	: undefined;
 ---
 
-<article class:list={['architecture-card', `architecture-card--${architecture.cloud}`]}>
-	<div class="architecture-card__thumbnail" data-cloud={architecture.cloud} aria-hidden="true">
-		<span></span>
-		<span></span>
-		<span></span>
-	</div>
-	<div class="architecture-card__body">
-		<div class="architecture-card__badges">
-			<span class:list={['architecture-card__badge', `architecture-card__badge--${architecture.cloud}`]}>
-				{cloudLabels[architecture.cloud]}
-			</span>
-			{architecture.themes.map((theme) => (
-				<span class="architecture-card__badge architecture-card__badge--theme">
-					{themeLabels[theme] ?? theme}
-				</span>
-			))}
+{architecture.detailId ? (
+	<a
+		class:list={[
+			'architecture-card',
+			`architecture-card--${architecture.cloud}`,
+			'architecture-card--linked',
+		]}
+		href={detailUrl}
+		aria-label={architecture.title}
+	>
+		<div class="architecture-card__thumbnail" data-cloud={architecture.cloud} aria-hidden="true">
+			<span></span>
+			<span></span>
+			<span></span>
 		</div>
-		<h3>{architecture.title}</h3>
-		<p>{architecture.services.join(' · ')}</p>
-	</div>
-</article>
+		<div class="architecture-card__body">
+			<div class="architecture-card__badges">
+				<span class:list={['architecture-card__badge', `architecture-card__badge--${architecture.cloud}`]}>
+					{cloudLabels[architecture.cloud]}
+				</span>
+				{architecture.themes.map((theme) => (
+					<span class="architecture-card__badge architecture-card__badge--theme">
+						{themeLabels[theme] ?? theme}
+					</span>
+				))}
+			</div>
+			<h3>{architecture.title}</h3>
+			<p>{architecture.services.join(' · ')}</p>
+			<span class="architecture-card__detail-cta">
+				ケーススタディを読む <span aria-hidden="true">→</span>
+			</span>
+		</div>
+	</a>
+) : (
+	<article class:list={['architecture-card', `architecture-card--${architecture.cloud}`]}>
+		<div class="architecture-card__thumbnail" data-cloud={architecture.cloud} aria-hidden="true">
+			<span></span>
+			<span></span>
+			<span></span>
+		</div>
+		<div class="architecture-card__body">
+			<div class="architecture-card__badges">
+				<span class:list={['architecture-card__badge', `architecture-card__badge--${architecture.cloud}`]}>
+					{cloudLabels[architecture.cloud]}
+				</span>
+				{architecture.themes.map((theme) => (
+					<span class="architecture-card__badge architecture-card__badge--theme">
+						{themeLabels[theme] ?? theme}
+					</span>
+				))}
+			</div>
+			<h3>{architecture.title}</h3>
+			<p>{architecture.services.join(' · ')}</p>
+		</div>
+	</article>
+)}
 
 <style>
 	.architecture-card {
+		display: block;
 		overflow: hidden;
 		border: 1px solid var(--border);
 		border-radius: var(--radius);
 		background: var(--surface);
+		color: inherit;
+		text-decoration: none;
+	}
+
+	.architecture-card--linked {
+		transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+	}
+
+	.architecture-card--linked:hover {
+		border-color: var(--gcp);
+		box-shadow: 0 0.75rem 1.5rem rgb(29 29 27 / 8%);
+		text-decoration: none;
+		transform: translateY(-2px);
+	}
+
+	.architecture-card--linked:focus-visible {
+		outline: 3px solid var(--accent);
+		outline-offset: 4px;
 	}
 
 	.architecture-card--compare {
@@ -168,5 +226,21 @@ const themeLabels: Record<string, string> = {
 		margin: 0;
 		color: var(--text-3);
 		font-size: 0.75rem;
+	}
+
+	.architecture-card__detail-cta {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		margin-top: 0.875rem;
+		color: var(--gcp);
+		font-size: 0.8125rem;
+		font-weight: 600;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.architecture-card--linked {
+			transition: none;
+		}
 	}
 </style>
