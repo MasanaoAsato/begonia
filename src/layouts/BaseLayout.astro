@@ -37,7 +37,7 @@ const { title, description } = Astro.props;
 		left: 0.75rem;
 		z-index: 20;
 		transform: translateY(-200%);
-		border-radius: 0.5rem;
+		border-radius: var(--radius);
 		background: var(--text);
 		padding: 0.625rem 0.875rem;
 		color: var(--surface);
@@ -46,7 +46,7 @@ const { title, description } = Astro.props;
 
 	.skip-link:focus-visible {
 		transform: translateY(0);
-		outline: 2px solid var(--accent);
+		outline: 3px solid var(--text);
 		outline-offset: 2px;
 	}
 </style>

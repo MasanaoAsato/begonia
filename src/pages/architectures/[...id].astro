@@ -6,6 +6,7 @@ import {
 	type Cloud,
 } from '../../data/architectures';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getLatestArchitectureSourceUrl } from '../../utils/architecture-source';
 
 const requiredHeadings = [
 	'想定シナリオ',
@@ -127,7 +128,7 @@ const themeLabels: Record<string, string> = {
 	network: 'ネットワーク',
 	data: 'データ基盤',
 };
-const sourceUrl = `https://github.com/${entry.data.source.owner}/${entry.data.source.repository}/tree/${entry.data.source.revision}/architectures/${entry.data.source.architectureId}`;
+const sourceUrl = getLatestArchitectureSourceUrl(entry.data.source);
 ---
 
 <BaseLayout
@@ -166,7 +167,7 @@ const sourceUrl = `https://github.com/${entry.data.source.owner}/${entry.data.so
 						alt={entry.data.diagramAlt}
 					/>
 				</div>
-				<figcaption>公開経路の全体像。構成図は出典リポジトリの固定コミットから取り込んでいます。</figcaption>
+				<figcaption>公開経路の全体像。実装は出典リポジトリの最新コードで確認できます。</figcaption>
 			</figure>
 
 			<div class="case-study__body">
@@ -188,11 +189,11 @@ const sourceUrl = `https://github.com/${entry.data.source.owner}/${entry.data.so
 
 			<footer class="case-study__source">
 				<div>
-					<p class="case-study__source-label">SOURCE / {entry.data.source.revision.slice(0, 7)}</p>
-					<p>実装と出典のREADMEを、取り込み元の固定コミットで確認できます。</p>
+					<p class="case-study__source-label">GITHUB / MAIN</p>
+					<p>このケースの最新の実装とREADMEを確認できます。</p>
 				</div>
 				<a href={sourceUrl} target="_blank" rel="noopener noreferrer">
-					GitHubで実装と出典を見る <span aria-hidden="true">↗</span>
+					GitHubで最新の実装を見る <span aria-hidden="true">↗</span>
 				</a>
 			</footer>
 		</div>
@@ -211,7 +212,7 @@ const sourceUrl = `https://github.com/${entry.data.source.owner}/${entry.data.so
 		align-items: center;
 		margin-bottom: 3.5rem;
 		color: var(--text-3);
-		font-size: 0.75rem;
+		font-size: 0.875rem;
 	}
 
 	.case-study__breadcrumb a {
@@ -236,11 +237,11 @@ const sourceUrl = `https://github.com/${entry.data.source.owner}/${entry.data.so
 	}
 
 	.case-study__badge {
-		border-radius: 999px;
-		background: #f0efe9;
+		border-radius: var(--radius);
+		background: var(--surface-2);
 		padding: 0.25rem 0.7rem;
 		color: var(--text-2);
-		font-size: 0.7rem;
+		font-size: 0.8125rem;
 		font-weight: 600;
 	}
 
@@ -252,8 +253,9 @@ const sourceUrl = `https://github.com/${entry.data.source.owner}/${entry.data.so
 	.case-study__kicker,
 	.case-study__source-label {
 		margin: 0;
-		color: var(--accent);
-		font-size: 0.7rem;
+		color: var(--text-3);
+		font-family: var(--font-mono);
+		font-size: 0.8125rem;
 		font-weight: 700;
 		letter-spacing: 0.14em;
 	}
@@ -261,6 +263,7 @@ const sourceUrl = `https://github.com/${entry.data.source.owner}/${entry.data.so
 	h1 {
 		max-width: 44rem;
 		margin: 0.6rem 0 1rem;
+		font-family: var(--font-display);
 		font-size: clamp(2rem, 5vw, 3.5rem);
 		letter-spacing: -0.045em;
 		line-height: 1.12;
@@ -282,7 +285,7 @@ const sourceUrl = `https://github.com/${entry.data.source.owner}/${entry.data.so
 		padding: 0;
 		list-style: none;
 		color: var(--text-3);
-		font-size: 0.8rem;
+		font-size: 0.9375rem;
 	}
 
 	.case-study__services li {
@@ -309,8 +312,9 @@ const sourceUrl = `https://github.com/${entry.data.source.owner}/${entry.data.so
 		min-height: 18rem;
 		overflow: hidden;
 		border: 1px solid var(--border);
+		border-radius: var(--radius);
 		background: var(--surface);
-		box-shadow: 0 1rem 3rem rgb(29 29 27 / 6%);
+		box-shadow: 0.65rem 0.65rem 0 var(--surface-2);
 	}
 
 	.case-study__diagram img {
@@ -322,7 +326,7 @@ const sourceUrl = `https://github.com/${entry.data.source.owner}/${entry.data.so
 	.case-study__diagram figcaption {
 		margin-top: 0.75rem;
 		color: var(--text-3);
-		font-size: 0.75rem;
+		font-size: 0.875rem;
 	}
 
 	.case-study__body {
@@ -336,13 +340,14 @@ const sourceUrl = `https://github.com/${entry.data.source.owner}/${entry.data.so
 	.case-study__toc {
 		position: sticky;
 		top: 5rem;
-		font-size: 0.75rem;
+		font-size: 0.875rem;
 	}
 
 	.case-study__toc p {
 		margin: 0 0 0.75rem;
-		color: var(--accent);
-		font-size: 0.65rem;
+		color: var(--text-3);
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
 		font-weight: 700;
 		letter-spacing: 0.14em;
 	}
@@ -406,16 +411,18 @@ const sourceUrl = `https://github.com/${entry.data.source.owner}/${entry.data.so
 
 	.case-study__prose :global(code) {
 		border-radius: 0.25rem;
-		background: #f0efe9;
+		background: var(--surface-2);
 		padding: 0.08rem 0.32rem;
 		font-size: 0.9em;
+		overflow-wrap: anywhere;
+		word-break: break-word;
 	}
 
 	.case-study__prose :global(table) {
 		width: 100%;
 		margin: 1.5rem 0;
 		border-collapse: collapse;
-		font-size: 0.82rem;
+		font-size: 0.9375rem;
 	}
 
 	.case-study__prose :global(th),
@@ -427,7 +434,7 @@ const sourceUrl = `https://github.com/${entry.data.source.owner}/${entry.data.so
 	}
 
 	.case-study__prose :global(th) {
-		background: #f5f4f0;
+		background: var(--surface-2);
 		font-weight: 700;
 	}
 
@@ -447,7 +454,7 @@ const sourceUrl = `https://github.com/${entry.data.source.owner}/${entry.data.so
 		padding-top: 1.25rem;
 		max-width: 58rem;
 		color: var(--text-3);
-		font-size: 0.8rem;
+		font-size: 0.9375rem;
 	}
 
 	.case-study__source p:not(.case-study__source-label) {

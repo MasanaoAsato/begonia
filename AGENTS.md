@@ -23,6 +23,10 @@ Qiita: https://qiita.com/masa-asa
 ## フォルダについての補足
 設計関連の資料を .design フォルダに格納しています。参照してください。
 
+## コードについて
+DRY原則に従う
+コンテンツは再利用可能な形式に、追加削除、メンテナンスのしやすさを重要視する
+
 ## Development
 
 When starting the dev server, use background mode:

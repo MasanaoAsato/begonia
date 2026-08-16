@@ -1,21 +1,40 @@
+@font-face {
+	font-family: "Noto Sans JP Local";
+	font-style: normal;
+	font-weight: 400;
+	font-display: swap;
+	src: url("/fonts/noto-sans-jp-japanese-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+	font-family: "Noto Sans JP Local";
+	font-style: normal;
+	font-weight: 700;
+	font-display: swap;
+	src: url("/fonts/noto-sans-jp-japanese-700-normal.woff2") format("woff2");
+}
+
 :root {
-	--bg: #fafaf8;
+	--bg: #eff4f4;
 	--surface: #ffffff;
-	--border: #e4e2dc;
-	--text: #1d1d1b;
-	--text-2: #5f5e58;
-	--text-3: #6b6a64;
-	--azure: #185fa5;
-	--azure-bg: #e6f1fb;
-	--gcp: #0f6e56;
-	--gcp-bg: #e1f5ee;
-	--accent: #a83e1f;
-	--accent-bg: #faece7;
-	--radius: 10px;
-	--maxw: 1080px;
+	--surface-2: #dfe9e9;
+	--border: #b7c8cb;
+	--text: #15323a;
+	--text-2: #425c62;
+	--text-3: #5b6f74;
+	--azure: #0067b8;
+	--azure-bg: #e4f2fc;
+	--gcp: #147d64;
+	--gcp-bg: #e2f3ed;
+	--accent: #15323a;
+	--accent-bg: #dfe9e9;
+	--radius: 4px;
+	--maxw: 1280px;
+	--font-display: "Noto Sans JP Local", "BIZ UDPGothic", "Hiragino Sans", "Yu Gothic", sans-serif;
+	--font-body: "Noto Sans JP Local", "Hiragino Sans", "Yu Gothic", Meiryo, sans-serif;
+	--font-mono: "SFMono-Regular", Consolas, "Liberation Mono", "Noto Sans JP Local", monospace;
 	color-scheme: light;
-	font-family:
-		"Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+	font-family: var(--font-body);
 }
 
 * {
@@ -27,11 +46,20 @@ html {
 }
 
 body {
+	min-width: 320px;
 	margin: 0;
 	background: var(--bg);
 	color: var(--text);
-	font-size: 15px;
-	line-height: 1.7;
+	font-size: 17px;
+	line-height: 1.8;
+	text-rendering: optimizeLegibility;
+}
+
+:where(h1, h2, h3, p, li, figcaption) {
+	line-break: strict;
+	word-break: normal;
+	word-break: auto-phrase;
+	text-wrap: pretty;
 }
 
 a {
@@ -44,6 +72,16 @@ a:hover {
 }
 
 .container {
-	width: min(var(--maxw), calc(100% - 3rem));
+	width: min(var(--maxw), calc(100% - clamp(2rem, 6vw, 6rem)));
 	margin-inline: auto;
+}
+
+::selection {
+	background: var(--text);
+	color: var(--surface);
+}
+
+:where(a, button, input, select, textarea):focus-visible {
+	outline: 3px solid var(--text);
+	outline-offset: 4px;
 }

@@ -3,14 +3,15 @@ import type { ArchitectureSummary } from '../../data/architectures';
 
 interface Props {
 	architecture: ArchitectureSummary;
+	position: number;
 }
 
-const { architecture } = Astro.props;
+const { architecture, position } = Astro.props;
 
 const cloudLabels = {
 	azure: 'Azure',
 	gcp: 'Google Cloud',
-	compare: 'Azure × Google Cloud 比較',
+	compare: 'Azure × Google Cloud',
 } satisfies Record<ArchitectureSummary['cloud'], string>;
 
 const themeLabels: Record<string, string> = {
@@ -28,218 +29,200 @@ const detailUrl = architecture.detailId
 {architecture.detailId ? (
 	<a
 		class:list={[
-			'architecture-card',
-			`architecture-card--${architecture.cloud}`,
-			'architecture-card--linked',
+			'architecture-entry',
+			`architecture-entry--${architecture.cloud}`,
+			'architecture-entry--linked',
 		]}
 		href={detailUrl}
-		aria-label={architecture.title}
+		aria-label={`${architecture.title}のケーススタディを読む`}
 	>
-		<div class="architecture-card__thumbnail" data-cloud={architecture.cloud} aria-hidden="true">
-			<span></span>
-			<span></span>
-			<span></span>
+		<span class="architecture-entry__index">{String(position).padStart(2, '0')}</span>
+		<div class="architecture-entry__provider">
+			<strong>{cloudLabels[architecture.cloud]}</strong>
+			<span>{architecture.themes.map((theme) => themeLabels[theme] ?? theme).join(' / ')}</span>
 		</div>
-		<div class="architecture-card__body">
-			<div class="architecture-card__badges">
-				<span class:list={['architecture-card__badge', `architecture-card__badge--${architecture.cloud}`]}>
-					{cloudLabels[architecture.cloud]}
-				</span>
-				{architecture.themes.map((theme) => (
-					<span class="architecture-card__badge architecture-card__badge--theme">
-						{themeLabels[theme] ?? theme}
-					</span>
-				))}
-			</div>
+		<div class="architecture-entry__body">
 			<h3>{architecture.title}</h3>
 			<p>{architecture.services.join(' · ')}</p>
-			<span class="architecture-card__detail-cta">
-				ケーススタディを読む <span aria-hidden="true">→</span>
-			</span>
 		</div>
+		<span class="architecture-entry__status">公開中</span>
+		<span class="architecture-entry__arrow" aria-hidden="true">→</span>
 	</a>
 ) : (
-	<article class:list={['architecture-card', `architecture-card--${architecture.cloud}`]}>
-		<div class="architecture-card__thumbnail" data-cloud={architecture.cloud} aria-hidden="true">
-			<span></span>
-			<span></span>
-			<span></span>
+	<article class:list={['architecture-entry', `architecture-entry--${architecture.cloud}`]}>
+		<span class="architecture-entry__index">{String(position).padStart(2, '0')}</span>
+		<div class="architecture-entry__provider">
+			<strong>{cloudLabels[architecture.cloud]}</strong>
+			<span>{architecture.themes.map((theme) => themeLabels[theme] ?? theme).join(' / ')}</span>
 		</div>
-		<div class="architecture-card__body">
-			<div class="architecture-card__badges">
-				<span class:list={['architecture-card__badge', `architecture-card__badge--${architecture.cloud}`]}>
-					{cloudLabels[architecture.cloud]}
-				</span>
-				{architecture.themes.map((theme) => (
-					<span class="architecture-card__badge architecture-card__badge--theme">
-						{themeLabels[theme] ?? theme}
-					</span>
-				))}
-			</div>
+		<div class="architecture-entry__body">
 			<h3>{architecture.title}</h3>
 			<p>{architecture.services.join(' · ')}</p>
 		</div>
+		<span class="architecture-entry__status architecture-entry__status--summary">概要のみ</span>
 	</article>
 )}
 
 <style>
-	.architecture-card {
-		display: block;
-		overflow: hidden;
-		border: 1px solid var(--border);
-		border-radius: var(--radius);
-		background: var(--surface);
+	.architecture-entry {
+		position: relative;
+		display: grid;
+		grid-template-columns: 3rem minmax(10rem, 13rem) minmax(0, 1fr) max-content 1.75rem;
+		gap: clamp(0.75rem, 1.5vw, 1.25rem);
+		align-items: center;
+		min-height: 6rem;
+		border-bottom: 1px solid var(--border);
+		padding: 0.8rem 0;
 		color: inherit;
 		text-decoration: none;
 	}
 
-	.architecture-card--linked {
-		transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
-	}
-
-	.architecture-card--linked:hover {
-		border-color: var(--gcp);
-		box-shadow: 0 0.75rem 1.5rem rgb(29 29 27 / 8%);
-		text-decoration: none;
-		transform: translateY(-2px);
-	}
-
-	.architecture-card--linked:focus-visible {
-		outline: 3px solid var(--accent);
-		outline-offset: 4px;
-	}
-
-	.architecture-card--compare {
-		border-width: 2px;
-		border-color: var(--accent);
-	}
-
-	.architecture-card__thumbnail {
-		display: flex;
-		height: 9.375rem;
-		align-items: center;
-		justify-content: center;
-		gap: 1.125rem;
-		border-bottom: 1px solid var(--border);
-		background: #f5f4f0;
-	}
-
-	.architecture-card__thumbnail span {
-		position: relative;
-		width: 3.25rem;
-		height: 2.125rem;
-		border: 1px solid var(--text-3);
-		border-radius: 0.3125rem;
-		background: var(--surface);
-	}
-
-	.architecture-card__thumbnail span:not(:last-child)::after {
+	.architecture-entry::before {
 		position: absolute;
-		top: 50%;
-		left: calc(100% + 1px);
-		width: 1.125rem;
-		border-top: 1px solid var(--text-3);
+		top: -1px;
+		left: 0;
+		width: 3.25rem;
+		border-top: 2px solid var(--text-3);
 		content: '';
 	}
 
-	.architecture-card__thumbnail[data-cloud='azure'] span {
+	.architecture-entry--azure::before {
 		border-color: var(--azure);
-		background: var(--azure-bg);
 	}
 
-	.architecture-card__thumbnail[data-cloud='gcp'] span {
+	.architecture-entry--gcp::before {
 		border-color: var(--gcp);
-		background: var(--gcp-bg);
 	}
 
-	.architecture-card__thumbnail[data-cloud='compare'] {
-		gap: 1.5rem;
+	.architecture-entry--compare::before {
+		height: 2px;
+		border: 0;
+		background: linear-gradient(90deg, var(--azure) 0 50%, var(--gcp) 50%);
 	}
 
-	.architecture-card__thumbnail[data-cloud='compare'] span:nth-child(1) {
-		border-color: var(--azure);
-		background: var(--azure-bg);
+	.architecture-entry--linked {
+		transition: background 160ms ease;
 	}
 
-	.architecture-card__thumbnail[data-cloud='compare'] span:nth-child(2) {
-		display: none;
+	.architecture-entry--linked:hover {
+		background: var(--surface);
+		text-decoration: none;
 	}
 
-	.architecture-card__thumbnail[data-cloud='compare'] span:nth-child(3) {
-		border-color: var(--gcp);
-		background: var(--gcp-bg);
+	:where(.architecture-entry--linked:hover) .architecture-entry__arrow {
+		transform: translateX(0.25rem);
 	}
 
-	.architecture-card__thumbnail[data-cloud='compare'] span:nth-child(1)::after {
-		top: 1rem;
-		width: 1.5rem;
-		border-top-style: dashed;
+	.architecture-entry__index {
+		color: var(--text-3);
+		font-family: var(--font-mono);
+		font-size: 0.9375rem;
+		font-variant-numeric: tabular-nums;
 	}
 
-	.architecture-card__body {
-		padding: 1rem 1.125rem 1.125rem;
+	.architecture-entry__provider {
+		display: grid;
+		gap: 0.3rem;
 	}
 
-	.architecture-card__badges {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.375rem;
-		margin-bottom: 0.625rem;
+	.architecture-entry__provider strong {
+		font-size: 0.9375rem;
+		font-weight: 700;
+		line-height: 1.4;
 	}
 
-	.architecture-card__badge {
-		border-radius: 999px;
-		padding: 0.1875rem 0.625rem;
-		font-size: 0.6875rem;
-		font-weight: 600;
-		line-height: 1.35;
-	}
-
-	.architecture-card__badge--azure {
-		background: var(--azure-bg);
+	.architecture-entry--azure .architecture-entry__provider strong {
 		color: var(--azure);
 	}
 
-	.architecture-card__badge--gcp {
-		background: var(--gcp-bg);
+	.architecture-entry--gcp .architecture-entry__provider strong {
 		color: var(--gcp);
 	}
 
-	.architecture-card__badge--compare {
-		background: var(--accent-bg);
-		color: var(--accent);
+	.architecture-entry--compare .architecture-entry__provider strong {
+		background: linear-gradient(90deg, var(--azure), var(--gcp));
+		background-clip: text;
+		color: transparent;
 	}
 
-	.architecture-card__badge--theme {
-		background: #f0efe9;
-		color: var(--text-2);
-		font-weight: 500;
+	.architecture-entry__provider span,
+	.architecture-entry__body p {
+		color: var(--text-3);
+		font-family: var(--font-mono);
+		font-size: 0.875rem;
 	}
 
 	h3 {
-		margin: 0 0 0.375rem;
-		font-size: 0.9375rem;
-		line-height: 1.5;
+		margin: 0 0 0.35rem;
+		font-family: var(--font-display);
+		font-size: clamp(1.25rem, 2vw, 1.55rem);
+		letter-spacing: -0.025em;
+		line-height: 1.45;
 	}
 
-	p {
+	.architecture-entry__body p {
 		margin: 0;
-		color: var(--text-3);
-		font-size: 0.75rem;
 	}
 
-	.architecture-card__detail-cta {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.35rem;
-		margin-top: 0.875rem;
+	.architecture-entry__status {
 		color: var(--gcp);
-		font-size: 0.8125rem;
-		font-weight: 600;
+		font-family: var(--font-mono);
+		font-size: 0.875rem;
+		white-space: nowrap;
+		font-weight: 700;
+		text-align: right;
+	}
+
+	.architecture-entry__status--summary {
+		color: var(--text-3);
+	}
+
+	.architecture-entry__arrow {
+		font-size: 1.1rem;
+		transition: transform 160ms ease;
+	}
+
+	@media (max-width: 720px) {
+		.architecture-entry {
+			grid-template-columns: 2.5rem minmax(0, 1fr) auto;
+			gap: 0.5rem 0.75rem;
+			min-height: 7.5rem;
+			padding-block: 0.9rem;
+		}
+
+		.architecture-entry::before {
+			width: 2.5rem;
+		}
+
+		.architecture-entry__index {
+			grid-row: 1 / span 2;
+			align-self: start;
+			padding-top: 0.15rem;
+		}
+
+		.architecture-entry__provider {
+			grid-column: 2;
+			grid-row: 1;
+		}
+
+		.architecture-entry__body {
+			grid-column: 2 / -1;
+			grid-row: 2;
+		}
+
+		.architecture-entry__status {
+			grid-column: 3;
+			grid-row: 1;
+		}
+
+		.architecture-entry__arrow {
+			display: none;
+		}
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.architecture-card--linked {
+		.architecture-entry--linked,
+		.architecture-entry__arrow {
 			transition: none;
 		}
 	}
