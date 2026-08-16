@@ -10,6 +10,12 @@ export interface ArchitectureSummary {
 	detailId?: string;
 }
 
+export interface HeroCaseStudyConfig {
+	architectureId: ArchitectureSummary['id'];
+	label: string;
+	description: string;
+}
+
 export const architectures: ArchitectureSummary[] = [
 	{
 		id: 'azure-web-spike',
@@ -23,7 +29,7 @@ export const architectures: ArchitectureSummary[] = [
 		id: 'gcp-serverless-api',
 		cloud: 'gcp',
 		themes: ['web'],
-		title: 'Cloud RunをLB経由で公開し、入口を一つに絞る',
+		title: 'Cloud Runの公開入口を設計する',
 		services: ['Cloud Run', 'Load Balancing', 'Cloud Armor'],
 		featured: true,
 		detailId: 'google-cloud/01',
@@ -37,3 +43,10 @@ export const architectures: ArchitectureSummary[] = [
 		featured: true,
 	},
 ];
+
+// ヒーローで紹介するケースと、選定理由をここで一緒に管理する。
+export const heroCaseStudy: HeroCaseStudyConfig = {
+	architectureId: 'gcp-serverless-api',
+	label: '注目のケーススタディ',
+	description: '構成図・要件・判断・実装を、ひとつの実例として読めます。',
+};

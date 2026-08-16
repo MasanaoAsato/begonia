@@ -1,9 +1,14 @@
 <header class="site-header">
 	<div class="site-header__inner container">
-		<a class="site-header__brand" href="/" aria-label="Cloud Architecture Lab のホーム">
-			Cloud Architecture <span>Lab</span>
+		<a class="site-header__brand" href="/" aria-label="Masanao Asato Architecture Catalog のホーム">
+			<span class="site-header__monogram" aria-hidden="true">MA</span>
+			<span class="site-header__brand-copy">
+				<strong>Masanao Asato</strong>
+				<small>Architecture catalog</small>
+			</span>
 		</a>
-		<nav class="site-header__links" aria-label="外部リンク">
+		<nav class="site-header__links" aria-label="サイト内・外部リンク">
+			<a href="/#architecture-index">Index</a>
 			<a href="https://qiita.com/masa-asa" target="_blank" rel="noopener noreferrer">
 				Qiita <span aria-hidden="true">↗</span>
 				<span class="sr-only">（新しいタブで開く）</span>
@@ -22,51 +27,86 @@
 		top: 0;
 		z-index: 10;
 		border-bottom: 1px solid var(--border);
-		background: color-mix(in srgb, var(--bg) 92%, transparent);
-		backdrop-filter: blur(8px);
+		background: color-mix(in srgb, var(--bg) 94%, transparent);
+		backdrop-filter: blur(12px);
 	}
 
 	.site-header__inner {
 		display: flex;
-		min-height: 60px;
+		min-height: 76px;
 		align-items: center;
 		justify-content: space-between;
 		gap: 1rem;
 	}
 
 	.site-header__brand {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.7rem;
 		color: var(--text);
-		font-size: 1rem;
-		font-weight: 700;
-		letter-spacing: 0.02em;
+		text-decoration: none;
 	}
 
-	.site-header__brand span {
-		color: var(--accent);
+	.site-header__brand:hover {
+		text-decoration: none;
+	}
+
+	.site-header__monogram {
+		display: grid;
+		width: 2.25rem;
+		height: 2.25rem;
+		place-items: center;
+		border: 1px solid var(--text);
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		font-weight: 700;
+		letter-spacing: -0.08em;
+	}
+
+	.site-header__brand-copy {
+		display: grid;
+		line-height: 1.25;
+	}
+
+	.site-header__brand-copy strong {
+		font-size: 0.9375rem;
+	}
+
+	.site-header__brand-copy small {
+		color: var(--text-3);
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		letter-spacing: 0.03em;
+		text-transform: uppercase;
 	}
 
 	.site-header__links {
 		display: flex;
 		align-items: center;
-		gap: 0.25rem;
+		gap: clamp(0.1rem, 1vw, 0.65rem);
 	}
 
 	.site-header__links a {
-		padding: 0.5rem 0.875rem;
-		border-radius: 8px;
+		display: inline-flex;
+		min-height: 3rem;
+		align-items: center;
+		padding: 0.5rem 0.65rem;
 		color: var(--text-2);
-		font-size: 0.875rem;
+		font-family: var(--font-mono);
+		font-size: 0.8125rem;
+		font-weight: 700;
 	}
 
 	.site-header__links a:hover {
-		background: #f0efe9;
+		background: var(--surface);
 		color: var(--text);
+		text-decoration: none;
 	}
 
 	.site-header__links a:focus-visible,
 	.site-header__brand:focus-visible {
-		outline: 2px solid var(--accent);
-		outline-offset: 2px;
+		outline: 3px solid var(--text);
+		outline-offset: 3px;
 	}
 
 	.sr-only {
@@ -82,8 +122,37 @@
 	}
 
 	@media (max-width: 720px) {
+		.site-header__inner {
+			min-height: 64px;
+		}
+
+		.site-header__brand {
+			gap: 0.45rem;
+		}
+
+		.site-header__monogram {
+			width: 1.75rem;
+			height: 1.75rem;
+		}
+
+		.site-header__brand-copy strong {
+			font-size: 0.8125rem;
+		}
+
+		.site-header__brand-copy small {
+			font-size: 0.6875rem;
+		}
+
 		.site-header__links a {
-			padding-inline: 0.5rem;
+			padding-inline: 0.35rem;
+			font-size: 0.75rem;
+		}
+	}
+
+	@media (max-width: 390px) {
+		.site-header__brand-copy small,
+		.site-header__links a:first-child {
+			display: none;
 		}
 	}
 </style>

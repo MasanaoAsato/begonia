@@ -1,18 +1,42 @@
 ---
+import { getEntry } from 'astro:content';
 import FeaturedArchitectures from '../components/home/FeaturedArchitectures.astro';
 import HeroSection from '../components/home/HeroSection.astro';
-import { architectures } from '../data/architectures';
+import { architectures, heroCaseStudy } from '../data/architectures';
 import BaseLayout from '../layouts/BaseLayout.astro';
 
 const featuredArchitectures = architectures.filter(
 	(architecture) => architecture.featured,
 );
+const spotlightArchitecture = architectures.find(
+	(architecture) => architecture.id === heroCaseStudy.architectureId,
+);
+
+if (!spotlightArchitecture?.detailId) {
+	throw new Error(
+		`ヒーローに設定したケーススタディを公開できません: ${heroCaseStudy.architectureId}`,
+	);
+}
+
+const publishedEntry = await getEntry(
+	'architectureDetails',
+	spotlightArchitecture.detailId,
+);
+
+if (!publishedEntry) {
+	throw new Error(`詳細コンテンツがありません: ${spotlightArchitecture.detailId}`);
+}
 ---
 
 <BaseLayout
 	title="Cloud Architecture Lab — Masanao Asato"
-	description="Azure と Google Cloud で同一テーマのアーキテクチャを設計・構築し、設計判断・コスト・本番化への差分まで言語化しています。"
+	description="クラウドサービスのアーキテクチャを、要件・設計判断・コスト・Terraform・本番化との差分までケーススタディとして公開しています。"
 >
-	<HeroSection />
+	<HeroSection
+		architecture={spotlightArchitecture}
+		entry={publishedEntry}
+		architectureCount={featuredArchitectures.length}
+		spotlight={heroCaseStudy}
+	/>
 	<FeaturedArchitectures items={featuredArchitectures} />
 </BaseLayout>
