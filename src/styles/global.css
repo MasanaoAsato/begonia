@@ -57,7 +57,6 @@ body {
 
 :where(h1, h2, h3, p, li, figcaption) {
 	line-break: strict;
-	word-break: normal;
 	word-break: auto-phrase;
 	text-wrap: pretty;
 }
