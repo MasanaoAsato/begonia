@@ -1,25 +1,32 @@
 ---
 import type { CollectionEntry } from 'astro:content';
-import type {
-	ArchitectureSummary,
-	HeroCaseStudyConfig,
-} from '../../data/architectures';
 import { getLatestArchitectureSourceUrl } from '../../utils/architecture-source';
+import {
+	type ArchitectureSummary,
+	getArchitectureDetailUrl,
+	getCloudLabel,
+	getThemeLabel,
+} from '../../utils/architectures';
 
 interface Props {
 	architecture: ArchitectureSummary;
 	entry: CollectionEntry<'architectureDetails'>;
 	architectureCount: number;
-	spotlight: HeroCaseStudyConfig;
 }
 
-const { architecture, entry, architectureCount, spotlight } = Astro.props;
-const detailUrl = `/architectures/${architecture.detailId}/`;
+const { architecture, entry, architectureCount } = Astro.props;
+const { spotlight } = entry.data;
+if (!spotlight) {
+	throw new Error(`注目のケーススタディの設定がありません: ${entry.id}`);
+}
+
+const detailUrl = getArchitectureDetailUrl(architecture);
 const sourceUrl = getLatestArchitectureSourceUrl(entry.data.source);
-const providerLabel = entry.data.source.provider === 'gcp' ? 'Google Cloud' : 'Azure';
+const providerLabel = getCloudLabel(architecture.cloud);
+const themeLabel = architecture.themes.map(getThemeLabel).join(' / ');
 ---
 
-<section class="hero" aria-labelledby="home-title">
+<section class:list={['hero', `hero--${architecture.cloud}`]} aria-labelledby="home-title">
 	<div class="hero__grid container">
 		<header class="hero__intro">
 			<p class="hero__catalog-label">Cloud Architecture Lab / Case study catalog</p>
@@ -44,13 +51,11 @@ const providerLabel = entry.data.source.provider === 'gcp' ? 'Google Cloud' : 'A
 			<figure class="hero__plate">
 				<figcaption class="hero__plate-heading">
 					<span>構成図</span>
-					<strong>{providerLabel} / Web公開アーキテクチャ</strong>
+					<strong>{providerLabel} / {themeLabel}</strong>
 				</figcaption>
 				<div class="hero__diagram">
 					<img
-						src={entry.data.diagram.src}
-						width={entry.data.diagram.width}
-						height={entry.data.diagram.height}
+						src={entry.data.diagram}
 						alt={entry.data.diagramAlt}
 						loading="eager"
 						fetchpriority="high"
@@ -60,7 +65,7 @@ const providerLabel = entry.data.source.provider === 'gcp' ? 'Google Cloud' : 'A
 			</figure>
 
 			<aside class="hero__case">
-				<p class="hero__case-meta">{providerLabel} / Web公開アーキテクチャ</p>
+				<p class="hero__case-meta">{providerLabel} / {themeLabel}</p>
 				<h2 id="published-case-title">{architecture.title}</h2>
 				<p class="hero__case-description">{entry.data.description}</p>
 				<div class="hero__services-group">
@@ -84,6 +89,16 @@ const providerLabel = entry.data.source.provider === 'gcp' ? 'Google Cloud' : 'A
 </section>
 
 <style>
+	.hero--gcp {
+		--hero-accent: var(--gcp);
+		--hero-accent-bg: var(--gcp-bg);
+	}
+
+	.hero--azure {
+		--hero-accent: var(--azure);
+		--hero-accent-bg: var(--azure-bg);
+	}
+
 	.hero {
 		padding: clamp(2.75rem, 5vw, 4.75rem) 0 clamp(2.5rem, 5vw, 4.5rem);
 		border-bottom: 1px solid var(--border);
@@ -148,7 +163,7 @@ const providerLabel = entry.data.source.provider === 'gcp' ? 'Google Cloud' : 'A
 	}
 
 	.hero__index-link:hover {
-		color: var(--gcp);
+		color: var(--hero-accent);
 		text-decoration: none;
 	}
 
@@ -165,8 +180,8 @@ const providerLabel = entry.data.source.provider === 'gcp' ? 'Google Cloud' : 'A
 		align-items: center;
 		justify-content: space-between;
 		gap: 1rem;
-		border-top: 1px solid color-mix(in srgb, var(--gcp) 48%, var(--border));
-		border-bottom: 1px solid color-mix(in srgb, var(--gcp) 48%, var(--border));
+		border-top: 1px solid color-mix(in srgb, var(--hero-accent) 48%, var(--border));
+		border-bottom: 1px solid color-mix(in srgb, var(--hero-accent) 48%, var(--border));
 		padding: 0.65rem 0;
 	}
 
@@ -178,7 +193,7 @@ const providerLabel = entry.data.source.provider === 'gcp' ? 'Google Cloud' : 'A
 		display: flex;
 		align-items: center;
 		gap: 0.5rem;
-		color: var(--gcp);
+		color: var(--hero-accent);
 		font-size: 0.8125rem;
 		font-weight: 700;
 		letter-spacing: 0.04em;
@@ -188,7 +203,7 @@ const providerLabel = entry.data.source.provider === 'gcp' ? 'Google Cloud' : 'A
 	.hero__featured-heading p:first-child span {
 		width: 0.6rem;
 		height: 0.6rem;
-		background: var(--gcp);
+		background: var(--hero-accent);
 	}
 
 	.hero__featured-heading p:last-child {
@@ -200,6 +215,10 @@ const providerLabel = entry.data.source.provider === 'gcp' ? 'Google Cloud' : 'A
 	}
 
 	.hero__plate {
+		align-self: start;
+		display: grid;
+		grid-template-rows: auto minmax(0, 1fr);
+		height: clamp(23rem, 28vw, 26rem);
 		position: relative;
 		margin: 0;
 		border: 1px solid var(--text);
@@ -239,7 +258,7 @@ const providerLabel = entry.data.source.provider === 'gcp' ? 'Google Cloud' : 'A
 		gap: 1rem;
 		border-bottom: 1px solid var(--border);
 		padding: 0.75rem 0.8rem;
-		color: var(--gcp);
+		color: var(--hero-accent);
 		font-weight: 700;
 		font-size: 0.75rem;
 		letter-spacing: 0.07em;
@@ -320,14 +339,14 @@ const providerLabel = entry.data.source.provider === 'gcp' ? 'Google Cloud' : 'A
 		margin: 0;
 		padding: 0;
 		list-style: none;
-		color: var(--gcp);
+		color: var(--hero-accent);
 		font-family: var(--font-mono);
 		font-size: 0.8125rem;
 	}
 
 	.hero__services li {
-		border: 1px solid color-mix(in srgb, var(--gcp) 42%, var(--border));
-		background: var(--gcp-bg);
+		border: 1px solid color-mix(in srgb, var(--hero-accent) 42%, var(--border));
+		background: var(--hero-accent-bg);
 		padding: 0.2rem 0.45rem;
 		line-height: 1.45;
 	}
@@ -348,7 +367,7 @@ const providerLabel = entry.data.source.provider === 'gcp' ? 'Google Cloud' : 'A
 	}
 
 	.hero__source a:hover {
-		color: var(--gcp);
+		color: var(--hero-accent);
 		text-decoration: underline;
 		text-underline-offset: 0.2em;
 	}
@@ -458,6 +477,8 @@ const providerLabel = entry.data.source.provider === 'gcp' ? 'Google Cloud' : 'A
 
 		.hero__plate {
 			order: 3;
+			display: block;
+			height: auto;
 			box-shadow: 0.4rem 0.4rem 0 var(--surface-2);
 		}
 

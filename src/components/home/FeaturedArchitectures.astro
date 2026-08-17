@@ -1,5 +1,5 @@
 ---
-import type { ArchitectureSummary } from '../../data/architectures';
+import type { ArchitectureSummary } from '../../utils/architectures';
 import ArchitectureCard from '../architecture/ArchitectureCard.astro';
 
 interface Props {
@@ -7,7 +7,6 @@ interface Props {
 }
 
 const { items } = Astro.props;
-const publishedCount = items.filter((item) => item.detailId).length;
 ---
 
 <section id="architecture-index" class="featured" aria-labelledby="featured-title">
@@ -18,12 +17,12 @@ const publishedCount = items.filter((item) => item.detailId).length;
 				<h2 id="featured-title">ケーススタディ（アーキテクチャ）一覧</h2>
 			</div>
 			<p class="featured__coverage">
-				<strong>{publishedCount} / {items.length}</strong>
+				<strong>{items.length}</strong>
 				<span>ケーススタディ公開中</span>
 			</p>
 		</header>
 		<p class="featured__intro">
-			クラウドサービスの構成をケーススタディとして掲載しています。公開済みのテーマは設計判断・コスト・コードまで、詳細のないテーマは現在確認できる範囲を「概要のみ」として読めます。
+			クラウドサービスの構成をケーススタディとして掲載しています。各テーマで、要件・設計判断・コスト・コードまでを確認できます。
 		</p>
 		<div class="featured__list">
 			{items.map((architecture, index) => (

@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ケーススタディ（アーキテクチャ）追加手順</title>
+  <style>
+    :root { color-scheme: light dark; --bg:#f6f8fb; --surface:#fff; --text:#172033; --muted:#596579; --border:#d8dee8; --accent:#2563a9; --ok:#17643d; --ok-bg:#edf9f1; --warn:#8a4d08; --warn-bg:#fff6e8; --code:#eef2f7; }
+    * { box-sizing:border-box; } html { scroll-behavior:smooth; } body { margin:0; background:var(--bg); color:var(--text); font:16px/1.7 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    main { width:min(960px,calc(100% - 2rem)); margin:2rem auto 4rem; padding:clamp(1.25rem,4vw,3rem); background:var(--surface); border:1px solid var(--border); border-radius:14px; }
+    h1,h2,h3 { line-height:1.25; } h1 { margin:0; font-size:clamp(1.9rem,4vw,2.8rem); } h2 { margin-top:3rem; padding-bottom:.5rem; border-bottom:1px solid var(--border); font-size:1.5rem; } h3 { margin-top:2rem; font-size:1.12rem; }
+    p,li { overflow-wrap:anywhere; } a { color:var(--accent); } nav { display:flex; flex-wrap:wrap; gap:.5rem .85rem; margin:1.5rem 0 2rem; } nav a { font-size:.9rem; }
+    code { padding:.1rem .35rem; border-radius:4px; background:var(--code); font:0.9em/1.4 ui-monospace,SFMono-Regular,Consolas,monospace; } pre { overflow:auto; margin:1rem 0; padding:1rem 1.15rem; border:1px solid var(--border); border-radius:8px; background:#182230; color:#eef4ff; line-height:1.55; } pre code { padding:0; background:transparent; color:inherit; }
+    table { width:100%; border-collapse:collapse; margin:1rem 0; } th,td { padding:.6rem .7rem; border:1px solid var(--border); text-align:left; vertical-align:top; } th { background:color-mix(in srgb,var(--border) 30%,transparent); } .table-wrap { overflow-x:auto; }
+    .notice { margin:1rem 0; padding:.9rem 1rem; border-left:4px solid; border-radius:0 8px 8px 0; } .notice strong { display:block; } .notice--ok { border-color:var(--ok); background:var(--ok-bg); } .notice--warn { border-color:var(--warn); background:var(--warn-bg); }
+    .checklist { padding-left:1.35rem; } .checklist li + li { margin-top:.45rem; } .compact li + li { margin-top:.2rem; } .step { display:grid; grid-template-columns:2.2rem 1fr; gap:.75rem; align-items:start; margin:2rem 0; } .step__number { display:grid; place-items:center; width:2.2rem; height:2.2rem; border-radius:50%; background:var(--text); color:var(--surface); font-weight:800; } .step__body > :first-child { margin-top:0; }
+    @media (prefers-color-scheme:dark) { :root { --bg:#101723; --surface:#182230; --text:#eef2f7; --muted:#b9c4d4; --border:#3b485b; --accent:#91bdff; --ok-bg:#163827; --warn-bg:#452d14; --code:#253248; } pre { background:#0f1724; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>ケーススタディ（アーキテクチャ）追加手順</h1>
+      <p>この手順だけで、AzureまたはGoogle Cloudの実在アーキテクチャを、サイトの一覧と静的詳細ページへ追加できます。通常の追加ではアプリケーションコードを変更しません。</p>
+      <nav aria-label="手順書の目次"><a href="#outcome">完了条件</a><a href="#rules">変更前のルール</a><a href="#procedure">追加手順</a><a href="#template">原稿テンプレート</a><a href="#verification">検証</a><a href="#troubleshooting">失敗時の対処</a></nav>
+    </header>
+
+    <section id="outcome">
+      <h2>完了条件</h2>
+      <ol class="checklist">
+        <li>Homeに新しいカードが指定順で表示され、<code>/architectures/{provider}/{architectureId}/</code>へ遷移できる。</li>
+        <li>詳細ページに構成図、5つの本文セクション、出典GitHubの<code>main/architectures/{architectureId}</code>へのリンクが表示される。</li>
+        <li><code>pnpm run build</code>、<code>pnpm run check</code>、<code>git diff --check</code>がすべて成功する。</li>
+      </ol>
+    </section>
+
+    <section id="rules">
+      <h2>変更前のルール</h2>
+      <div class="notice notice--ok"><strong>追加の単位</strong><p>1アーキテクチャは、Markdown原稿1件と構成図SVG 1件です。カードのタイトル、クラウド、分類、サービス、掲載順、本文、出典はすべてMarkdownのfrontmatterと本文から作られます。</p></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>cloud</th><th>原典リポジトリ</th><th>Markdownの置き場所</th><th>詳細URL（ブラウザ）</th><th>図の置き場所（リポジトリ内）</th></tr></thead>
+          <tbody>
+            <tr><td><code>azure</code></td><td><code>MasanaoAsato/azure-learning</code></td><td><code>src/content/architectures/azure/{architectureId}.md</code></td><td><code>/architectures/azure/{architectureId}/</code></td><td><code>public/architectures/azure/{architectureId}.svg</code></td></tr>
+            <tr><td><code>gcp</code></td><td><code>MasanaoAsato/google-cloud-learning</code></td><td><code>src/content/architectures/google-cloud/{architectureId}.md</code></td><td><code>/architectures/google-cloud/{architectureId}/</code></td><td><code>public/architectures/google-cloud/{architectureId}.svg</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul class="compact">
+        <li><code>architectureId</code>は原典の<code>architectures/{architectureId}</code>のディレクトリ名と完全一致させます。<code>02</code>を<code>2</code>へ変換しません。</li>
+        <li>使える<code>themes</code>は<code>web</code>、<code>container</code>、<code>network</code>、<code>data</code>だけです。</li>
+        <li><code>sortOrder</code>は全記事で重複しない0以上の整数です。Homeでは小さい順に並びます。</li>
+        <li><code>featured: true</code>ならHomeへ表示されます。<code>false</code>でも詳細ページは生成されますが、Homeには載りません。</li>
+      </ul>
+      <div class="notice notice--warn"><strong>この手順の対象外</strong><p>新しいクラウド、未登録の分類、原典リポジトリ名の変更、または本文の5セクション構成を変える場合は、この手順だけでは追加できません。<code>src/content.config.ts</code>と<code>src/utils/architectures.ts</code>の契約を変更する設計・実装作業として扱ってください。</p></div>
+    </section>
+
+    <section id="procedure">
+      <h2>追加手順</h2>
+      <h3>最終的に必要なファイルと設定先</h3>
+      <p>通常の追加では、下表の<strong>新規2ファイル</strong>だけを作成します。Homeの注目枠を切り替えるときだけ、既存Markdown 1件も編集します。</p>
+      <div class="table-wrap"><table><thead><tr><th>対象</th><th>Azure 02の例</th><th>作業</th><th>設定する値・表示への影響</th></tr></thead><tbody><tr><td>原典</td><td><code>/tmp/azure-learning/architectures/02/</code></td><td>読む。変更しない。</td><td><code>README.md</code>と実装を本文の根拠にし、<code>git rev-parse HEAD</code>を原典revisionとして記録する。</td></tr><tr><td>構成図SVG<br>（新規）</td><td><code>public/architectures/azure/02.svg</code></td><td>原典の<code>architecture.svg</code>をコピーする。</td><td>Markdownの<code>diagram: /architectures/azure/02.svg</code>と一致させる。詳細ページと、この記事を注目記事にした場合のHomeに表示される。</td></tr><tr><td>ケーススタディ原稿<br>（新規）</td><td><code>src/content/architectures/azure/02.md</code></td><td>frontmatterと本文を書く。</td><td>カード、詳細URL、構成図の代替テキスト、本文、出典リンクの情報源になる。設定値の対応はこの後の「frontmatter値の対応表」を使う。</td></tr><tr><td>現在の注目記事の原稿<br>（条件付き編集）</td><td><code>src/content/architectures/google-cloud/01.md</code></td><td>注目記事を切り替えるときだけ<code>spotlight</code>ブロックを削除する。</td><td>新記事へ移さない限り編集しない。サイト全体で<code>spotlight</code>は1件でなければならない。</td></tr></tbody></table></div>
+      <div class="step">
+        <div class="step__number">1</div>
+        <div class="step__body">
+          <h3>追加計画を決める</h3>
+          <p>作業を始める前に、下表を埋めます。以後のパスとfrontmatterはこの値をそのまま使います。例はAzureの<code>02</code>です。</p>
+          <div class="table-wrap"><table><thead><tr><th>項目</th><th>Azure 02の例</th><th>決め方</th></tr></thead><tbody><tr><td><code>cloud</code></td><td><code>azure</code></td><td>Azureなら<code>azure</code>、Google Cloudなら<code>gcp</code>。</td></tr><tr><td><code>architectureId</code></td><td><code>02</code></td><td>原典の<code>architectures/02</code>と同じ文字列。</td></tr><tr><td>entry ID</td><td><code>azure/02</code></td><td>Azureは<code>azure/{architectureId}</code>、GCPは<code>google-cloud/{architectureId}</code>。</td></tr><tr><td><code>sortOrder</code></td><td><code>30</code></td><td>既存値と重複しない値。現在の最大値より10大きい値を使う。</td></tr><tr><td><code>featured</code></td><td><code>true</code></td><td>Homeに載せるなら<code>true</code>。</td></tr></tbody></table></div>
+          <pre><code>cd /home/ubuntu/workspace/begonia<br>rg -n "^(sortOrder|spotlight):" src/content/architectures<br>git status --short</code></pre>
+          <p>既存の変更が表示された場合も、その変更を上書きせず、新記事に関係するファイルだけを編集します。</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step__number">2</div>
+        <div class="step__body">
+          <h3>原典を確定し、revisionを記録する</h3>
+          <p>原典リポジトリの<code>architectures/{architectureId}</code>に、少なくともTerraform等の実装、<code>README.md</code>、<code>architecture.svg</code>がある状態にします。原典がローカルにない場合は先にcloneし、内容を確定させます。</p>
+          <pre><code># Azureの例。GCPでは azure-learning を google-cloud-learning に置き換える。<br>git clone https://github.com/MasanaoAsato/azure-learning.git /tmp/azure-learning<br>git -C /tmp/azure-learning switch main<br>git -C /tmp/azure-learning pull --ff-only<br>git -C /tmp/azure-learning rev-parse HEAD<br>git -C /tmp/azure-learning status --short<br>test -f /tmp/azure-learning/architectures/02/README.md<br>test -f /tmp/azure-learning/architectures/02/architecture.svg</code></pre>
+          <p><code>git status --short</code>は何も表示しないことを確認します。表示がある原典はスナップショットとして使わず、必要な変更をコミットしてから、または意図的に不要な変更を取り除いてから、この手順をやり直します。<code>rev-parse HEAD</code>の40桁の小文字SHAを後の<code>source.revision</code>へそのまま記録します。これはポートフォリオへ取り込んだ原典のスナップショットです。一方、詳細ページの「GitHubで最新の実装を見る」は原典リポジトリの<code>main</code>を開きます。</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step__number">3</div>
+        <div class="step__body">
+          <h3>構成図を静的アセットとして追加する</h3>
+          <p>原典の図を変更せずにコピーします。SVGはMarkdownと同じ<code>src/content</code>には置かず、必ず<code>public</code>に置きます。</p>
+          <pre><code># Azure 02の例<br>mkdir -p public/architectures/azure<br>cp /tmp/azure-learning/architectures/02/architecture.svg public/architectures/azure/02.svg<br>test -s public/architectures/azure/02.svg<br><br># Google Cloud 02の場合<br># mkdir -p public/architectures/google-cloud<br># cp /tmp/google-cloud-learning/architectures/02/architecture.svg public/architectures/google-cloud/02.svg<br># test -s public/architectures/google-cloud/02.svg</code></pre>
+          <p>この結果、Azure 02の<code>diagram</code>値は<code>/architectures/azure/02.svg</code>になります。ファイル名、URL、frontmatterの値は完全一致させます。</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step__number">4</div>
+        <div class="step__body">
+          <h3>Markdown原稿を作成する</h3>
+          <p>次のテンプレートを、Azureなら<code>src/content/architectures/azure/{architectureId}.md</code>、Google Cloudなら<code>src/content/architectures/google-cloud/{architectureId}.md</code>に保存します。<code>[[...]]</code>を残さず、すべて実際の値に置換します。タイトルや説明に<code>:</code>、<code>#</code>、先頭の<code>[</code>などYAMLとして解釈される文字を含めるときは、値全体をダブルクォートで囲みます。</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step__number">5</div>
+        <div class="step__body">
+          <h3>本文を原典から再構成する</h3>
+          <ul class="checklist"><li><strong>想定シナリオ:</strong> 利用者、解決する課題、到達経路、対象外の要件を示します。</li><li><strong>設計判断:</strong> ADRごとに背景、決定、比較した選択肢、影響を記述します。Terraform等の実装で確認できる事実だけを「実装済み」とします。</li><li><strong>コスト試算:</strong> 料金確認日、リージョン、稼働時間、SKU、利用量、合計、含まない費用を明記します。</li><li><strong>セキュリティと運用:</strong> 実装済みの制御、検証方法、学習後の削除手順を記述します。秘密情報は掲載しません。</li><li><strong>学習スコープと本番化への差分:</strong> この題材で扱う範囲と、本番化で別途設計する項目を分けます。</li></ul>
+          <div class="notice notice--warn"><strong>見出しの制約</strong><p>本文の<code>h2</code>はテンプレートの5つだけで、順序も完全一致が必要です。構成図はページが自動表示するため<code>## 構成図</code>を追加しません。小見出しは<code>###</code>以下を使います。</p></div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step__number">6</div>
+        <div class="step__body">
+          <h3>Homeへの掲載と注目枠を確認する</h3>
+          <p>通常は新記事のMarkdownに<code>featured: true</code>を設定し、Homeの一覧へ載せます。<code>spotlight</code>は、Home上部の「注目のケーススタディ」に表示する<strong>1記事だけ</strong>を指定するfrontmatterです。</p>
+          <ol class="checklist"><li><strong>注目記事を変えない場合:</strong> 新記事には<code>spotlight</code>を設定しない。既存の注目記事はそのまま残す。</li><li><strong>新記事を注目記事にする場合:</strong> 現在の注目記事Markdownから<code>spotlight:</code>ブロック全体を削除し、新記事Markdownの<code>sortOrder</code>の直後へ次のブロックを追加する。</li></ol>
+          <div class="notice notice--ok"><strong>新記事のMarkdownに追加するspotlightブロック</strong><p><code>label</code>は注目枠の見出し、<code>description</code>は補足文です。記事の構成図、タイトル、説明、サービス、詳細リンク、出典リンクは、同じMarkdownのほかのfrontmatterから自動で表示されます。</p><pre><code>spotlight:<br>  label: 注目のケーススタディ<br>  description: 構成図・要件・判断・実装を、ひとつの実例として読めます。</code></pre></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="template">
+      <h2>Markdownテンプレート</h2>
+      <p>Azure 02を例にしています。Google Cloudの場合は、<code>cloud</code>を<code>gcp</code>、<code>provider</code>を<code>gcp</code>、<code>repository</code>を<code>google-cloud-learning</code>、パスを<code>google-cloud</code>に置換します。</p>
+      <h3>frontmatter値の対応表</h3>
+      <div class="table-wrap"><table><thead><tr><th>Markdown内の設定先</th><th>Azure 02に設定する値</th><th>値の決め方・使われる場所</th></tr></thead><tbody><tr><td><code>title</code></td><td>読者向けのケース名</td><td>カードと詳細ページの見出しになる。</td></tr><tr><td><code>cloud</code></td><td><code>azure</code></td><td>Azureは<code>azure</code>、Google Cloudは<code>gcp</code>。表示名、色、原典との対応を決める。</td></tr><tr><td><code>themes</code></td><td>例: <code>network</code>、<code>data</code></td><td><code>web</code>、<code>container</code>、<code>network</code>、<code>data</code>から1つ以上選ぶ。カードと詳細の分類バッジになる。</td></tr><tr><td><code>services</code></td><td>例: <code>Azure Bastion</code></td><td>採用サービスを1件以上書く。カードと詳細の利用サービス一覧になる。</td></tr><tr><td><code>featured</code></td><td><code>true</code></td><td>Home一覧へ載せるなら<code>true</code>、載せないなら<code>false</code>。</td></tr><tr><td><code>sortOrder</code></td><td>例: <code>30</code></td><td>全記事で未使用の0以上の整数。Homeのカード順になる。</td></tr><tr><td><code>spotlight</code>（任意）</td><td>手順6のブロック</td><td>Home上部の注目記事にする場合だけ設定する。サイト全体で1件だけ。</td></tr><tr><td><code>description</code></td><td>1段落の要約</td><td>詳細冒頭とページの説明文になる。</td></tr><tr><td><code>source.provider</code> / <code>repository</code></td><td><code>azure</code> / <code>azure-learning</code></td><td>Google Cloudは<code>gcp</code> / <code>google-cloud-learning</code>。<code>cloud</code>と必ず対応させる。</td></tr><tr><td><code>source.owner</code></td><td><code>MasanaoAsato</code></td><td>固定値。GitHubリンクの所有者になる。</td></tr><tr><td><code>source.architectureId</code></td><td><code>'02'</code></td><td>原典ディレクトリ名と同じ文字列。詳細URLのID検証とGitHubリンクに使う。</td></tr><tr><td><code>source.revision</code></td><td>40桁SHA</td><td>手順2の<code>git rev-parse HEAD</code>の出力をそのまま貼る。</td></tr><tr><td><code>diagram</code></td><td><code>/architectures/azure/02.svg</code></td><td>手順3で作った<code>public/architectures/azure/02.svg</code>に対応する公開パス。</td></tr><tr><td><code>diagramAlt</code></td><td>接続経路の説明</td><td>構成図を見られない利用者にも伝わるよう、起点・経由サービス・到達先を文で書く。</td></tr></tbody></table></div>
+      <pre><code>---<br>title: [[読者向けのタイトル]]<br>cloud: azure<br>themes:<br>  - [[web | container | network | data]]<br>services:<br>  - [[サービス名 1]]<br>  - [[サービス名 2]]<br>featured: true<br>sortOrder: [[既存と重複しない0以上の整数]]<br>description: [[詳細ページ冒頭に表示する1段落の説明]]<br>source:<br>  provider: azure<br>  owner: MasanaoAsato<br>  repository: azure-learning<br>  architectureId: '02'<br>  revision: [[git rev-parse HEADの40桁SHA]]<br>diagram: /architectures/azure/02.svg<br>diagramAlt: [[図だけを読めない利用者にも伝わる接続経路の説明]]<br>---<br><br>## 想定シナリオ<br><br>[[利用者、課題、到達経路、対象外を記述する]]<br><br>## 設計判断<br><br>### ADR-001: [[判断のタイトル]]<br><br>- 背景: [[課題]]<br>- 決定: [[採用した構成と根拠]]<br>- 比較: [[採用しなかった案と理由]]<br>- 影響: [[コスト・運用・制約への影響]]<br><br>## コスト試算<br><br>[[料金確認日、リージョン、稼働時間、SKU、前提、合計、除外費用を記述する]]<br><br>## セキュリティと運用<br><br>### 実装済みのこと<br><br>- [[原典のコードで確認できる制御]]<br><br>### 確認と削除<br><br>1. [[確認手順]]<br>2. [[削除手順]]<br><br>## 学習スコープと本番化への差分<br><br>[[この題材の範囲と、本番化で別途必要な設計を記述する]]</code></pre>
+    </section>
+
+    <section id="verification">
+      <h2>検証と完了確認</h2>
+      <div class="step">
+        <div class="step__number">7</div>
+        <div class="step__body">
+          <h3>自動検証を実行する</h3>
+          <pre><code>pnpm run build<br>pnpm run check<br>git diff --check</code></pre>
+          <p><code>pnpm run build</code>はfrontmatterの型、クラウドと原典の対応、entry ID、<code>sortOrder</code>の重複、<code>spotlight</code>の件数、5つの<code>h2</code>の順序、静的ルート生成を確認します。</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step__number">8</div>
+        <div class="step__body">
+          <h3>ブラウザで確認する</h3>
+          <pre><code>pnpm exec astro dev --background<br>pnpm exec astro dev status</code></pre>
+          <p>表示されたURL（通常は<code>http://localhost:4321/</code>）でHomeを開き、次を確認します。</p>
+          <ul class="checklist"><li>新カードが<code>sortOrder</code>の昇順で表示される。</li><li>カードのクラウド名、分類、タイトル、利用サービスがfrontmatterどおりである。</li><li>カードを開くと、Azureは<code>/architectures/azure/{architectureId}/</code>、GCPは<code>/architectures/google-cloud/{architectureId}/</code>になる。</li><li>構成図が表示され、5つのセクション、出典リンク、クラウドに対応するアクセント色が表示される。</li></ul>
+          <pre><code>pnpm exec astro dev stop</code></pre>
+          <p>確認後は必ず開発サーバーを停止します。</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step__number">9</div>
+        <div class="step__body">
+          <h3>変更範囲を最終確認する</h3>
+          <pre><code>git status --short<br>git diff -- src/content/architectures public/architectures</code></pre>
+          <p>通常の追加で変更されるのは、新しいMarkdownとSVGだけです。注目枠を移した場合だけ、既存Markdown 1件の<code>spotlight</code>も変更されます。それ以外のソースコード変更がある場合は、意図を確認してから進めます。</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="troubleshooting">
+      <h2>失敗時の対処</h2>
+      <div class="table-wrap"><table><thead><tr><th>表示されたエラー・症状</th><th>確認・修正すること</th></tr></thead><tbody><tr><td><code>sortOrder は重複できません</code></td><td><code>rg -n "^sortOrder:" src/content/architectures</code>で既存値を確認し、新記事の値を未使用の整数へ変える。</td></tr><tr><td><code>spotlight は1件だけ設定してください</code></td><td>全Markdownの<code>spotlight:</code>を確認する。0件なら既存または新記事の1件に追加し、2件以上なら残す1件以外を削除する。</td></tr><tr><td><code>cloud と source.provider</code>または<code>source.repository</code>が一致しない</td><td>Azureは<code>azure</code> / <code>azure-learning</code>、GCPは<code>gcp</code> / <code>google-cloud-learning</code>にそろえる。</td></tr><tr><td><code>詳細IDと source.architectureId が一致しません</code></td><td>Markdownのパス、<code>architectureId</code>、<code>diagram</code>の番号を確認する。GCPのパスだけは<code>google-cloud/{architectureId}</code>である。</td></tr><tr><td><code>必須見出しの順序が不正です</code></td><td>本文の<code>##</code>をテンプレートの5つだけにし、文字列と順番を一致させる。小見出しは<code>###</code>へ下げる。</td></tr><tr><td>ビルドは成功するが図が表示されない</td><td><code>diagram</code>が<code>/architectures/...</code>で始まるか、対応する<code>public/architectures/...</code>のSVGが存在し空でないかを確認する。ファイル名の大文字・小文字も一致させる。</td></tr><tr><td>Homeに出ない</td><td><code>featured: true</code>にし、frontmatterが閉じる<code>---</code>の内側にあることを確認する。</td></tr></tbody></table></div>
+    </section>
+  </main>
+</body>
+</html>

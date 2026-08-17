@@ -1,5 +1,10 @@
 ---
-import type { ArchitectureSummary } from '../../data/architectures';
+import {
+	type ArchitectureSummary,
+	getArchitectureDetailUrl,
+	getCloudLabel,
+	getThemeLabel,
+} from '../../utils/architectures';
 
 interface Props {
 	architecture: ArchitectureSummary;
@@ -8,60 +13,30 @@ interface Props {
 
 const { architecture, position } = Astro.props;
 
-const cloudLabels = {
-	azure: 'Azure',
-	gcp: 'Google Cloud',
-	compare: 'Azure × Google Cloud',
-} satisfies Record<ArchitectureSummary['cloud'], string>;
-
-const themeLabels: Record<string, string> = {
-	web: 'Web / API',
-	container: 'コンテナ',
-	network: 'ネットワーク',
-	data: 'データ基盤',
-};
-
-const detailUrl = architecture.detailId
-	? `/architectures/${architecture.detailId}/`
-	: undefined;
+const detailUrl = getArchitectureDetailUrl(architecture);
 ---
 
-{architecture.detailId ? (
-	<a
-		class:list={[
-			'architecture-entry',
-			`architecture-entry--${architecture.cloud}`,
-			'architecture-entry--linked',
-		]}
-		href={detailUrl}
-		aria-label={`${architecture.title}のケーススタディを読む`}
-	>
-		<span class="architecture-entry__index">{String(position).padStart(2, '0')}</span>
-		<div class="architecture-entry__provider">
-			<strong>{cloudLabels[architecture.cloud]}</strong>
-			<span>{architecture.themes.map((theme) => themeLabels[theme] ?? theme).join(' / ')}</span>
-		</div>
-		<div class="architecture-entry__body">
-			<h3>{architecture.title}</h3>
-			<p>{architecture.services.join(' · ')}</p>
-		</div>
-		<span class="architecture-entry__status">公開中</span>
-		<span class="architecture-entry__arrow" aria-hidden="true">→</span>
-	</a>
-) : (
-	<article class:list={['architecture-entry', `architecture-entry--${architecture.cloud}`]}>
-		<span class="architecture-entry__index">{String(position).padStart(2, '0')}</span>
-		<div class="architecture-entry__provider">
-			<strong>{cloudLabels[architecture.cloud]}</strong>
-			<span>{architecture.themes.map((theme) => themeLabels[theme] ?? theme).join(' / ')}</span>
-		</div>
-		<div class="architecture-entry__body">
-			<h3>{architecture.title}</h3>
-			<p>{architecture.services.join(' · ')}</p>
-		</div>
-		<span class="architecture-entry__status architecture-entry__status--summary">概要のみ</span>
-	</article>
-)}
+<a
+	class:list={[
+		'architecture-entry',
+		`architecture-entry--${architecture.cloud}`,
+		'architecture-entry--linked',
+	]}
+	href={detailUrl}
+	aria-label={`${architecture.title}のケーススタディを読む`}
+>
+	<span class="architecture-entry__index">{String(position).padStart(2, '0')}</span>
+	<div class="architecture-entry__provider">
+		<strong>{getCloudLabel(architecture.cloud)}</strong>
+		<span>{architecture.themes.map(getThemeLabel).join(' / ')}</span>
+	</div>
+	<div class="architecture-entry__body">
+		<h3>{architecture.title}</h3>
+		<p>{architecture.services.join(' · ')}</p>
+	</div>
+	<span class="architecture-entry__status">公開中</span>
+	<span class="architecture-entry__arrow" aria-hidden="true">→</span>
+</a>
 
 <style>
 	.architecture-entry {
@@ -165,16 +140,12 @@ const detailUrl = architecture.detailId
 	}
 
 	.architecture-entry__status {
-		color: var(--gcp);
+		color: var(--text-2);
 		font-family: var(--font-mono);
 		font-size: 0.875rem;
 		white-space: nowrap;
 		font-weight: 700;
 		text-align: right;
-	}
-
-	.architecture-entry__status--summary {
-		color: var(--text-3);
 	}
 
 	.architecture-entry__arrow {
