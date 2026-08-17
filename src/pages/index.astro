@@ -1,30 +1,24 @@
 ---
-import { getEntry } from 'astro:content';
+import { getCollection } from 'astro:content';
 import FeaturedArchitectures from '../components/home/FeaturedArchitectures.astro';
 import HeroSection from '../components/home/HeroSection.astro';
-import { architectures, heroCaseStudy } from '../data/architectures';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import {
+	getArchitectureSummary,
+	sortArchitectureEntries,
+	validateArchitectureEntries,
+} from '../utils/architectures';
 
-const featuredArchitectures = architectures.filter(
-	(architecture) => architecture.featured,
-);
-const spotlightArchitecture = architectures.find(
-	(architecture) => architecture.id === heroCaseStudy.architectureId,
-);
+const entries = await getCollection('architectureDetails');
+validateArchitectureEntries(entries);
 
-if (!spotlightArchitecture?.detailId) {
-	throw new Error(
-		`ヒーローに設定したケーススタディを公開できません: ${heroCaseStudy.architectureId}`,
-	);
-}
+const featuredArchitectures = sortArchitectureEntries(
+	entries.filter((entry) => entry.data.featured),
+).map(getArchitectureSummary);
+const spotlightEntry = entries.find((entry) => entry.data.spotlight);
 
-const publishedEntry = await getEntry(
-	'architectureDetails',
-	spotlightArchitecture.detailId,
-);
-
-if (!publishedEntry) {
-	throw new Error(`詳細コンテンツがありません: ${spotlightArchitecture.detailId}`);
+if (!spotlightEntry) {
+	throw new Error('注目のケーススタディがありません。');
 }
 ---
 
@@ -33,10 +27,9 @@ if (!publishedEntry) {
 	description="クラウドサービスのアーキテクチャを、要件・設計判断・コスト・Terraform・本番化との差分までケーススタディとして公開しています。"
 >
 	<HeroSection
-		architecture={spotlightArchitecture}
-		entry={publishedEntry}
+		architecture={getArchitectureSummary(spotlightEntry)}
+		entry={spotlightEntry}
 		architectureCount={featuredArchitectures.length}
-		spotlight={heroCaseStudy}
 	/>
 	<FeaturedArchitectures items={featuredArchitectures} />
 </BaseLayout>

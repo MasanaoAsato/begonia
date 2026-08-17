@@ -10,19 +10,33 @@ const sourceSchema = z.object({
 	revision: z.string().regex(/^[0-9a-f]{40}$/),
 });
 
+const cloudSchema = z.enum(['gcp', 'azure']);
+const themeSchema = z.enum(['web', 'container', 'network', 'data']);
+
 const architectureDetails = defineCollection({
 	loader: glob({
 		pattern: '**/*.md',
 		base: './src/content/architectures',
 		generateId: ({ entry }) => entry.replace(/\.md$/, ''),
 	}),
-	schema: ({ image }) =>
-		z.object({
-			description: z.string().min(1),
-			source: sourceSchema,
-			diagram: image(),
-			diagramAlt: z.string().min(1),
-		}),
+	schema: z.object({
+		title: z.string().min(1),
+		cloud: cloudSchema,
+		themes: z.array(themeSchema).min(1),
+		services: z.array(z.string().min(1)).min(1),
+		featured: z.boolean(),
+		sortOrder: z.number().int().nonnegative(),
+		spotlight: z
+			.object({
+				label: z.string().min(1),
+				description: z.string().min(1),
+			})
+			.optional(),
+		description: z.string().min(1),
+		source: sourceSchema,
+		diagram: z.string().startsWith('/'),
+		diagramAlt: z.string().min(1),
+	}),
 });
 
 export const collections = {

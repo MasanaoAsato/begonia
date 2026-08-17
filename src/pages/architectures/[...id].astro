@@ -1,133 +1,44 @@
 ---
-import { type CollectionEntry, getCollection, render } from 'astro:content';
-import {
-	type ArchitectureSummary,
-	architectures,
-	type Cloud,
-} from '../../data/architectures';
+import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getLatestArchitectureSourceUrl } from '../../utils/architecture-source';
-
-const requiredHeadings = [
-	'想定シナリオ',
-	'設計判断',
-	'コスト試算',
-	'セキュリティと運用',
-	'学習スコープと本番化への差分',
-] as const;
+import {
+	type ArchitectureDetailEntry,
+	caseStudyHeadings,
+	getArchitectureSummary,
+	getCloudLabel,
+	getThemeLabel,
+	validateArchitectureEntries,
+} from '../../utils/architectures';
 
 type PageProps = {
-	architecture: ArchitectureSummary;
-	entry: CollectionEntry<'architectureDetails'>;
+	entry: ArchitectureDetailEntry;
 };
 
 export async function getStaticPaths() {
 	const entries = await getCollection('architectureDetails');
-	const publicProviderBySourceProvider = {
-		gcp: 'google-cloud',
-		azure: 'azure',
-	} as const;
-	const sourceProviderByCloud = {
-		azure: 'azure',
-		gcp: 'gcp',
-	} as const;
-	const repositoryBySourceProvider = {
-		gcp: 'google-cloud-learning',
-		azure: 'azure-learning',
-	} as const;
-	const requiredHeadingsForValidation = [
-		'想定シナリオ',
-		'設計判断',
-		'コスト試算',
-		'セキュリティと運用',
-		'学習スコープと本番化への差分',
-	] as const;
-	const getPublicProvider = (cloud: Cloud): string => {
-		if (cloud === 'compare') {
-			throw new Error('比較カードにはケーススタディ詳細を設定できません。');
-		}
+	validateArchitectureEntries(entries);
 
-		return publicProviderBySourceProvider[sourceProviderByCloud[cloud]];
-	};
-	const linkedArchitectures = architectures.filter((architecture) => architecture.detailId);
-	const detailIds = linkedArchitectures.map(({ detailId }) => detailId);
-
-	if (new Set(detailIds).size !== detailIds.length) {
-		throw new Error('ArchitectureSummary.detailId は重複できません。');
-	}
-
-	if (entries.length !== linkedArchitectures.length) {
-		throw new Error('カードとケーススタディ詳細の件数が一致していません。');
-	}
-
-	const entryById = new Map(entries.map((entry) => [entry.id, entry]));
-
-	for (const architecture of linkedArchitectures) {
-		if (!architecture.detailId) {
-			throw new Error(`詳細IDが空です: ${architecture.id}`);
-		}
-
-		const entry = entryById.get(architecture.detailId);
-		if (!entry) {
-			throw new Error(`詳細コンテンツがありません: ${architecture.detailId}`);
-		}
-
-		const sourceProvider =
-			architecture.cloud === 'compare'
-				? undefined
-				: sourceProviderByCloud[architecture.cloud];
-		if (!sourceProvider || entry.data.source.provider !== sourceProvider) {
-			throw new Error(`カードと出典providerが一致しません: ${architecture.detailId}`);
-		}
-
-		if (entry.data.source.repository !== repositoryBySourceProvider[sourceProvider]) {
-			throw new Error(`出典repositoryがproviderと一致しません: ${architecture.detailId}`);
-		}
-
-		const expectedDetailId = `${getPublicProvider(architecture.cloud)}/${entry.data.source.architectureId}`;
-		if (entry.id !== expectedDetailId) {
-			throw new Error(`詳細IDとsource.architectureIdが一致しません: ${entry.id}`);
-		}
-
+	for (const entry of entries) {
 		const { headings } = await render(entry);
 		const actualHeadings = headings
 			.filter((heading) => heading.depth === 2)
 			.map((heading) => heading.text);
-		if (JSON.stringify(actualHeadings) !== JSON.stringify(requiredHeadingsForValidation)) {
+		if (JSON.stringify(actualHeadings) !== JSON.stringify(caseStudyHeadings)) {
 			throw new Error(`必須見出しの順序が不正です: ${entry.id}`);
 		}
 	}
 
-	for (const entry of entries) {
-		if (!linkedArchitectures.some((architecture) => architecture.detailId === entry.id)) {
-			throw new Error(`未接続の詳細コンテンツがあります: ${entry.id}`);
-		}
-	}
-
-	return entries.map((entry) => {
-		const architecture = linkedArchitectures.find(
-			({ detailId }) => detailId === entry.id,
-		);
-		if (!architecture) {
-			throw new Error(`カードが見つかりません: ${entry.id}`);
-		}
-
-		return {
+	return entries.map((entry) => ({
 			params: { id: entry.id },
-			props: { architecture, entry },
-		};
-	});
+			props: { entry },
+		}));
 }
 
-const { architecture, entry } = Astro.props as PageProps;
+const { entry } = Astro.props as PageProps;
+const architecture = getArchitectureSummary(entry);
 const { Content } = await render(entry);
-const cloudLabel = architecture.cloud === 'gcp' ? 'Google Cloud' : 'Azure';
-const themeLabels: Record<string, string> = {
-	web: 'Web / API',
-	container: 'コンテナ',
-	network: 'ネットワーク',
-	data: 'データ基盤',
-};
+const cloudLabel = getCloudLabel(architecture.cloud);
 const sourceUrl = getLatestArchitectureSourceUrl(entry.data.source);
 ---
 
@@ -135,7 +46,7 @@ const sourceUrl = getLatestArchitectureSourceUrl(entry.data.source);
 	title={`${architecture.title} | Cloud Architecture Lab`}
 	description={entry.data.description}
 >
-	<article class="case-study">
+	<article class:list={['case-study', `case-study--${architecture.cloud}`]}>
 		<div class="container">
 			<nav class="case-study__breadcrumb" aria-label="パンくず">
 				<a href="/">Cloud Architecture Lab</a>
@@ -147,7 +58,7 @@ const sourceUrl = getLatestArchitectureSourceUrl(entry.data.source);
 				<div class="case-study__badges">
 					<span class="case-study__badge case-study__badge--provider">{cloudLabel}</span>
 					{architecture.themes.map((theme) => (
-						<span class="case-study__badge">{themeLabels[theme] ?? theme}</span>
+						<span class="case-study__badge">{getThemeLabel(theme)}</span>
 					))}
 				</div>
 				<p class="case-study__kicker">CASE STUDY / {entry.data.source.architectureId}</p>
@@ -161,9 +72,7 @@ const sourceUrl = getLatestArchitectureSourceUrl(entry.data.source);
 			<figure class="case-study__diagram">
 				<div class="case-study__diagram-frame">
 					<img
-						src={entry.data.diagram.src}
-						width={entry.data.diagram.width}
-						height={entry.data.diagram.height}
+						src={entry.data.diagram}
 						alt={entry.data.diagramAlt}
 					/>
 				</div>
@@ -174,7 +83,7 @@ const sourceUrl = getLatestArchitectureSourceUrl(entry.data.source);
 				<aside class="case-study__toc" aria-label="このケーススタディの構成">
 					<p>READING MAP</p>
 					<ol>
-						{requiredHeadings.map((heading, index) => (
+						{caseStudyHeadings.map((heading, index) => (
 							<li>
 								<span>{String(index + 1).padStart(2, '0')}</span>
 								{heading}
@@ -201,6 +110,16 @@ const sourceUrl = getLatestArchitectureSourceUrl(entry.data.source);
 </BaseLayout>
 
 <style>
+	.case-study--gcp {
+		--case-accent: var(--gcp);
+		--case-accent-bg: var(--gcp-bg);
+	}
+
+	.case-study--azure {
+		--case-accent: var(--azure);
+		--case-accent-bg: var(--azure-bg);
+	}
+
 	.case-study {
 		padding: 1.5rem 0 4rem;
 	}
@@ -221,7 +140,7 @@ const sourceUrl = getLatestArchitectureSourceUrl(entry.data.source);
 	}
 
 	.case-study__breadcrumb a:hover {
-		color: var(--gcp);
+		color: var(--case-accent);
 	}
 
 	.case-study__header {
@@ -246,8 +165,8 @@ const sourceUrl = getLatestArchitectureSourceUrl(entry.data.source);
 	}
 
 	.case-study__badge--provider {
-		background: var(--gcp-bg);
-		color: var(--gcp);
+		background: var(--case-accent-bg);
+		color: var(--case-accent);
 	}
 
 	.case-study__kicker,
@@ -298,7 +217,7 @@ const sourceUrl = getLatestArchitectureSourceUrl(entry.data.source);
 		width: 0.35rem;
 		height: 0.35rem;
 		border-radius: 50%;
-		background: var(--gcp);
+		background: var(--case-accent);
 		content: '';
 	}
 
@@ -369,7 +288,7 @@ const sourceUrl = getLatestArchitectureSourceUrl(entry.data.source);
 	}
 
 	.case-study__toc li span {
-		color: var(--gcp);
+		color: var(--case-accent);
 		font-variant-numeric: tabular-nums;
 	}
 
@@ -465,7 +384,7 @@ const sourceUrl = getLatestArchitectureSourceUrl(entry.data.source);
 		flex: 0 0 auto;
 		border-bottom: 1px solid currentColor;
 		padding-bottom: 0.15rem;
-		color: var(--gcp);
+		color: var(--case-accent);
 		font-weight: 700;
 	}
 
@@ -495,7 +414,7 @@ const sourceUrl = getLatestArchitectureSourceUrl(entry.data.source);
 		.case-study__toc {
 			position: static;
 			margin-bottom: 2.5rem;
-			border-left: 2px solid var(--gcp);
+		border-left: 2px solid var(--case-accent);
 			padding-left: 1rem;
 		}
 
