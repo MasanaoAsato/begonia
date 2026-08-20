@@ -1,5 +1,6 @@
 ---
 import { getCollection } from 'astro:content';
+import BlogPostList from '../components/home/BlogPostList.astro';
 import FeaturedArchitectures from '../components/home/FeaturedArchitectures.astro';
 import HeroSection from '../components/home/HeroSection.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
@@ -8,9 +9,15 @@ import {
 	sortArchitectureEntries,
 	validateArchitectureEntries,
 } from '../utils/architectures';
+import { getBlogPostSummary, getBlogPostsForBuild } from '../utils/blog-posts';
 
 const entries = await getCollection('architectureDetails');
 validateArchitectureEntries(entries);
+
+const blogPostEntries = await getCollection('blogPosts');
+const blogPosts = getBlogPostsForBuild(blogPostEntries, import.meta.env.PROD).map(
+	getBlogPostSummary,
+);
 
 const featuredArchitectures = sortArchitectureEntries(
 	entries.filter((entry) => entry.data.featured),
@@ -32,4 +39,5 @@ if (!spotlightEntry) {
 		architectureCount={featuredArchitectures.length}
 	/>
 	<FeaturedArchitectures items={featuredArchitectures} />
+	<BlogPostList posts={blogPosts} />
 </BaseLayout>

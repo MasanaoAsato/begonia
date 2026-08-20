@@ -1,0 +1,173 @@
+---
+import {
+	type BlogPostSummary,
+	formatBlogPostDate,
+	getBlogPostUrl,
+} from '../../utils/blog-posts';
+
+interface Props {
+	post: BlogPostSummary;
+	position: number;
+}
+
+const { post, position } = Astro.props;
+const postUrl = getBlogPostUrl(post);
+const publishedDate = formatBlogPostDate(post.publishedAt);
+---
+
+<a
+	class="blog-entry"
+	href={postUrl}
+	aria-label={`${post.title}の記事を読む`}
+>
+	<span class="blog-entry__index">{String(position).padStart(2, '0')}</span>
+	<div class="blog-entry__meta">
+		<time datetime={post.publishedAt.toISOString()}>{publishedDate}</time>
+		<ul class="blog-entry__tags" aria-label="記事のタグ">
+			{post.tags.map((tag) => <li>{tag}</li>)}
+		</ul>
+	</div>
+	<div class="blog-entry__body">
+		<h3>{post.title}</h3>
+		<p>{post.description}</p>
+	</div>
+	<span class="blog-entry__arrow" aria-hidden="true">→</span>
+</a>
+
+<style>
+	.blog-entry {
+		position: relative;
+		display: grid;
+		grid-template-columns: 3rem minmax(10rem, 14rem) minmax(0, 1fr) 1.75rem;
+		gap: clamp(0.75rem, 1.5vw, 1.25rem);
+		align-items: center;
+		min-height: 7rem;
+		border-bottom: 1px solid var(--border);
+		padding: 0.9rem 0;
+		color: inherit;
+		text-decoration: none;
+		transition: background 160ms ease;
+	}
+
+	.blog-entry::before {
+		position: absolute;
+		top: -1px;
+		left: 0;
+		width: 3.25rem;
+		border-top: 2px solid var(--accent);
+		content: '';
+	}
+
+	.blog-entry:hover {
+		background: var(--surface);
+		text-decoration: none;
+	}
+
+	:where(.blog-entry:hover) .blog-entry__arrow {
+		transform: translateX(0.25rem);
+	}
+
+	.blog-entry__index {
+		color: var(--text-3);
+		font-family: var(--font-mono);
+		font-size: 0.9375rem;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.blog-entry__meta {
+		display: grid;
+		align-content: start;
+		gap: 0.55rem;
+		min-width: 0;
+	}
+
+	.blog-entry__meta time {
+		color: var(--text-3);
+		font-family: var(--font-mono);
+		font-size: 0.8125rem;
+		font-variant-numeric: tabular-nums;
+		line-height: 1.4;
+		white-space: nowrap;
+	}
+
+	.blog-entry__tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.35rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		color: var(--text-3);
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+	}
+
+	.blog-entry__tags li {
+		border: 1px solid var(--border);
+		padding: 0.15rem 0.4rem;
+		line-height: 1.4;
+	}
+
+	.blog-entry__body {
+		min-width: 0;
+	}
+
+	h3 {
+		margin: 0 0 0.35rem;
+		font-family: var(--font-display);
+		font-size: clamp(1.25rem, 2vw, 1.55rem);
+		letter-spacing: -0.025em;
+		line-height: 1.45;
+	}
+
+	.blog-entry__body p {
+		margin: 0;
+		color: var(--text-2);
+		font-size: 0.9375rem;
+		line-height: 1.7;
+	}
+
+	.blog-entry__arrow {
+		font-size: 1.1rem;
+		transition: transform 160ms ease;
+	}
+
+	@media (max-width: 720px) {
+		.blog-entry {
+			grid-template-columns: 2.5rem minmax(0, 1fr);
+			gap: 0.45rem 0.75rem;
+			min-height: 8.75rem;
+			padding-block: 0.9rem;
+		}
+
+		.blog-entry::before {
+			width: 2.5rem;
+		}
+
+		.blog-entry__index {
+			grid-row: 1 / span 2;
+			align-self: start;
+			padding-top: 0.15rem;
+		}
+
+		.blog-entry__meta,
+		.blog-entry__body {
+			grid-column: 2;
+		}
+
+		.blog-entry__meta {
+			gap: 0.4rem;
+		}
+
+		.blog-entry__arrow {
+			display: none;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.blog-entry,
+		.blog-entry__arrow {
+			transition: none;
+		}
+	}
+</style>

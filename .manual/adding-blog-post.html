@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ブログ記事追加手順 | Cloud Architecture Lab</title>
+  <style>
+    :root {
+      --bg: #f7f8fa;
+      --surface: #fff;
+      --text: #182230;
+      --muted: #596579;
+      --border: #d7dde5;
+      --accent: #275dad;
+      --warning: #92400e;
+      --warning-bg: #fff7ed;
+      --ok: #166534;
+      --ok-bg: #ecfdf3;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 16px/1.7 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    main {
+      width: min(960px, calc(100% - 2rem));
+      margin: 2rem auto;
+      padding: clamp(1.25rem, 4vw, 3rem);
+      background: var(--surface);
+      border: 1px solid var(--border);
+    }
+
+    h1, h2, h3 { line-height: 1.3; }
+    h2 { margin-top: 2.75rem; padding-bottom: .45rem; border-bottom: 1px solid var(--border); }
+    h3 { margin-top: 2rem; }
+    nav { display: flex; flex-wrap: wrap; gap: .75rem; margin: 1.25rem 0 2rem; }
+    a { color: var(--accent); }
+    code { padding: .1rem .35rem; border-radius: 4px; background: #eef1f5; overflow-wrap: anywhere; }
+    pre { overflow-x: auto; margin: 1rem 0; border: 1px solid var(--border); background: #f1f4f7; padding: 1rem; }
+    pre code { padding: 0; background: transparent; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: .65rem .75rem; border: 1px solid var(--border); text-align: left; vertical-align: top; }
+    th { background: #f1f4f7; }
+    .table-wrap { overflow-x: auto; }
+    .callout { margin: 1rem 0; border-left: 4px solid; padding: .8rem 1rem; }
+    .warning { border-color: var(--warning); background: var(--warning-bg); }
+    .success { border-color: var(--ok); background: var(--ok-bg); }
+    .muted { color: var(--muted); }
+    .path { white-space: nowrap; }
+    li + li { margin-top: .45rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>ブログ記事追加手順</h1>
+      <p>この手順だけで、Content CollectionへMarkdown記事を追加し、ホームのブログ一覧と静的記事ページで公開できます。</p>
+      <nav aria-label="文書内ナビゲーション">
+        <a href="#contract">記事の契約</a>
+        <a href="#steps">追加手順</a>
+        <a href="#verify">確認</a>
+        <a href="#troubleshooting">トラブルシューティング</a>
+      </nav>
+    </header>
+
+    <section id="contract">
+      <h2>記事の契約</h2>
+      <p>通常の記事追加で変更するファイルは、<code>src/content/blog/</code>配下のMarkdownだけです。Content Collection、ホーム一覧、カード、記事ルートは実装済みなので、<code>src/content.config.ts</code>やAstroコンポーネントを記事ごとに編集しません。</p>
+
+      <h3>ファイルパス・ID・URL</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Markdownファイル</th><th>Collection ID</th><th>記事URL</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code class="path">src/content/blog/architecture-decisions.md</code></td>
+              <td><code>architecture-decisions</code></td>
+              <td><code>/blog/architecture-decisions/</code></td>
+            </tr>
+            <tr>
+              <td><code class="path">src/content/blog/azure/cost-basics.md</code></td>
+              <td><code>azure/cost-basics</code></td>
+              <td><code>/blog/azure/cost-basics/</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>拡張子を除いた<code>src/content/blog/</code>からの相対パスがIDになります。公開後はURLを維持するため、ファイルの改名・移動をしません。新しいファイル名は小文字とハイフンの組み合わせを推奨します。</p>
+
+      <h3>frontmatterフィールド</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>フィールド</th><th>必須</th><th>値</th><th>使われる場所</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>title</code></td><td>必須</td><td>空でない文字列</td><td>記事ページの唯一の<code>h1</code>、カード見出し、ページタイトル</td></tr>
+            <tr><td><code>description</code></td><td>必須</td><td>空でない文字列</td><td>カードの要約、記事ページの導入文、meta description</td></tr>
+            <tr><td><code>publishedAt</code></td><td>必須</td><td>日付として解釈できる値。<code>YYYY-MM-DD</code>で記述</td><td>公開日表示、並び順。新しい記事が先</td></tr>
+            <tr><td><code>tags</code></td><td>必須</td><td>空でない文字列を1件以上持つ配列</td><td>カードと記事ページのタグ</td></tr>
+            <tr><td><code>draft</code></td><td>任意</td><td>boolean。未指定は<code>false</code></td><td>下書き制御。productionでは一覧・記事ページから除外</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>上記以外の<code>slug</code>、<code>author</code>、<code>cover</code>、<code>url</code>などのfrontmatterは、このサイトの記事契約にはありません。追加のメタデータが必要な場合は、記事追加手順の範囲を超えるスキーマ設計として扱います。</p>
+
+      <div class="callout warning">
+        <strong>見出しの規則:</strong> ページの<code>h1</code>はfrontmatterの<code>title</code>から自動生成されます。本文で<code># 見出し</code>を使わず、本文の最初の見出しは<code>##</code>から始めてください。
+      </div>
+    </section>
+
+    <section id="steps">
+      <h2>追加手順</h2>
+
+      <h3 id="prepare">1. リポジトリと依存関係を準備する</h3>
+      <ol>
+        <li>リポジトリのルートへ移動します。
+          <pre><code>cd /home/ubuntu/workspace/begonia</code></pre>
+        </li>
+        <li>Node.jsは<code>&gt;=22.12.0</code>を使います。依存関係が未インストールなら、リポジトリの通常のセットアップ手順に従って<code>npm install</code>を一度実行します。</li>
+        <li>作業ツリーに自分の作業以外の変更がある場合は、それを上書きしません。開始前に確認します。
+          <pre><code>git status --short</code></pre>
+        </li>
+      </ol>
+
+      <h3 id="create-file">2. Markdownファイルを作成する</h3>
+      <p>初回は記事ディレクトリを作成し、記事IDにしたいファイル名でMarkdownを作ります。以下では<code>architecture-decisions</code>を例にします。</p>
+      <pre><code>mkdir -p src/content/blog
+vi src/content/blog/architecture-decisions.md</code></pre>
+      <p>エディタで次のfrontmatterを先頭に記述します。タイトルや説明に<code>:</code>、<code>#</code>、先頭の<code>[</code>などYAMLとして解釈される文字を含める場合は、値全体をダブルクォートで囲みます。</p>
+      <pre><code>---
+title: "設計判断を記録するためのブログ運用"
+description: "アーキテクチャの判断と検証結果を、あとから再利用できる形で記録する方法を整理します。"
+publishedAt: 2026-08-21
+tags:
+  - "Architecture"
+  - "Astro"
+draft: false
+---
+
+## 背景
+
+この記事で扱う課題と、読者が得られる結果を書きます。
+
+## 設計判断
+
+採用した方法、採用理由、トレードオフを記録します。
+
+## 検証結果
+
+実行した確認と、残っている制約を書きます。</code></pre>
+      <p class="muted">上の本文は例です。実際の記事では、タイトルとdescriptionの約束を本文の内容と一致させ、本文の見出しは記事ごとのテーマに合わせて追加します。</p>
+
+      <h3 id="draft">3. 下書きとして確認する</h3>
+      <p>執筆途中は<code>draft: true</code>にします。developmentでは下書きも一覧と記事ページに表示され、productionでは下書きがホームにも静的記事ルートにも出力されません。</p>
+      <p>公開するときは<code>draft: false</code>にするか、frontmatterから<code>draft</code>行を削除します。値を文字列の<code>"true"</code>や<code>"false"</code>にしないでください。スキーマが要求するbooleanではありません。</p>
+
+      <h3 id="local-preview">4. 開発サーバーで表示を確認する</h3>
+      <p>リポジトリの規約に従い、バックグラウンドで開発サーバーを起動します。</p>
+      <pre><code>astro dev --background
+astro dev status</code></pre>
+      <p><code>astro</code>コマンドがPATHにない場合は、同じ処理を次のnpmスクリプト経由で実行できます。</p>
+      <pre><code>npm run astro -- dev --background</code></pre>
+      <p>通常のポートは<code>4321</code>です。実際のポートは<code>astro dev status</code>または<code>astro dev logs</code>で確認し、次の2つをブラウザで開きます。</p>
+      <ul>
+        <li>ホーム: <code>http://localhost:4321/</code> — 第3領域「ブログ記事一覧」にカードが表示される。</li>
+        <li>記事: <code>http://localhost:4321/blog/architecture-decisions/</code> — タグ、公開日、タイトル、description、Markdown本文が表示される。</li>
+      </ul>
+      <p>下書きの確認が終わったら、公開記事として確認できるよう<code>draft: false</code>へ戻します。</p>
+
+      <h3 id="build">5. productionビルドで確認する</h3>
+      <p>frontmatterの型、Markdownの読み込み、静的記事ルート、ホーム一覧への接続をまとめて確認します。</p>
+      <pre><code>npm run check
+npm run build</code></pre>
+      <p>公開記事のIDを自分の値に置き換え、生成物が存在することを確認します。ネストしたIDの場合も、スラッシュをそのまま使います。</p>
+      <pre><code>ARTICLE_ID=architecture-decisions
+test -f "dist/blog/$ARTICLE_ID/index.html"
+printf 'generated: %s\n' "dist/blog/$ARTICLE_ID/index.html"</code></pre>
+      <p>productionビルドでは<code>draft: true</code>の記事に対応する<code>dist/blog/...</code>が生成されません。これは意図した公開制御です。</p>
+
+      <h3 id="finish">6. 差分と完了条件を確認する</h3>
+      <pre><code>git status --short
+git diff --check</code></pre>
+      <div class="callout success">
+        <strong>完了条件:</strong>
+        <ul>
+          <li>記事Markdownが<code>src/content/blog/</code>にあり、IDとURLが意図どおりである。</li>
+          <li>ホームの<code>#blog-index</code>に公開記事カードが表示され、カードから記事URLへ移動できる。</li>
+          <li>記事ページにfrontmatterと本文が表示され、本文の最初の見出しが<code>h2</code>である。</li>
+          <li><code>npm run check</code>と<code>npm run build</code>が成功する。</li>
+          <li>自分の意図しないファイル変更が差分に含まれていない。</li>
+        </ul>
+      </div>
+      <p>確認が終わったら、開発サーバーを停止します。</p>
+      <pre><code>astro dev stop</code></pre>
+    </section>
+
+    <section id="troubleshooting">
+      <h2>トラブルシューティング</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>症状</th><th>確認すること</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>blogPosts</code>のスキーマエラー</td>
+              <td><code>title</code>、<code>description</code>、<code>publishedAt</code>、1件以上の<code>tags</code>があるか確認します。<code>draft</code>はbooleanで記述します。</td>
+            </tr>
+            <tr>
+              <td>ホームにカードが出ない</td>
+              <td>productionでは<code>draft: true</code>が除外されます。公開する記事は<code>false</code>または未指定にし、開発サーバーを再読み込みします。</td>
+            </tr>
+            <tr>
+              <td>記事URLが404になる</td>
+              <td>ファイルパスから拡張子を除いたIDとURLを一致させます。ネストしたファイルは<code>/blog/親ディレクトリ/ファイル名/</code>です。</td>
+            </tr>
+            <tr>
+              <td>記事の日付順が想定と違う</td>
+              <td><code>publishedAt</code>は新しい日付が先です。同じ日付の場合はIDの昇順になります。表示は<code>Asia/Tokyo</code>基準です。</td>
+            </tr>
+            <tr>
+              <td>本文の見出し構造が崩れる</td>
+              <td>frontmatterの<code>title</code>がページの<code>h1</code>です。本文の<code>#</code>を<code>##</code>以上へ変更します。</td>
+            </tr>
+            <tr>
+              <td>ビルド時に空コレクション警告が出る</td>
+              <td>記事がまだ1件もない場合の警告は、空状態を許容する設計によるものです。記事ファイルを追加した後に再実行し、生成された記事URLを確認します。</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer>
+      <p class="muted">実装の正本: <code>src/content.config.ts</code>、<code>src/utils/blog-posts.ts</code>、<code>src/components/blog/BlogPostCard.astro</code>、<code>src/components/home/BlogPostList.astro</code>、<code>src/pages/blog/[...id].astro</code>。設計の根拠: <code>.design/04-blog-content-and-home-section.html</code>。</p>
+    </footer>
+  </main>
+</body>
+</html>

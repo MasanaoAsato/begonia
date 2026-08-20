@@ -1,0 +1,128 @@
+---
+import type { BlogPostSummary } from '../../utils/blog-posts';
+import BlogPostCard from '../blog/BlogPostCard.astro';
+
+interface Props {
+	posts: BlogPostSummary[];
+}
+
+const { posts } = Astro.props;
+---
+
+<section id="blog-index" class="blog-posts" aria-labelledby="blog-posts-title">
+	<div class="container">
+		<header class="blog-posts__header">
+			<div>
+				<p class="blog-posts__label">Blog / Notes</p>
+				<h2 id="blog-posts-title">ブログ記事一覧</h2>
+			</div>
+			<p class="blog-posts__coverage">
+				<strong>{posts.length}</strong>
+				<span>記事公開中</span>
+			</p>
+		</header>
+		<p class="blog-posts__intro">
+			クラウド設計、実装、運用で得た知見を、再利用できる設計ノートとして公開しています。
+		</p>
+		{posts.length > 0 ? (
+			<ol class="blog-posts__list">
+				{posts.map((post, index) => (
+					<li>
+						<BlogPostCard post={post} position={index + 1} />
+					</li>
+				))}
+			</ol>
+		) : (
+			<p class="blog-posts__empty">公開済みの記事は準備中です。</p>
+		)}
+	</div>
+</section>
+
+<style>
+	.blog-posts {
+		padding: clamp(3.25rem, 6vw, 5.5rem) 0;
+	}
+
+	.blog-posts__header {
+		display: flex;
+		align-items: end;
+		justify-content: space-between;
+		gap: 2rem;
+		border-bottom: 1px solid var(--text);
+		padding-bottom: 1.5rem;
+	}
+
+	.blog-posts__label {
+		margin: 0 0 0.65rem;
+		color: var(--text-3);
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+	}
+
+	h2 {
+		margin: 0;
+		font-family: var(--font-display);
+		font-size: clamp(1.9rem, 4vw, 3.25rem);
+		letter-spacing: -0.045em;
+		line-height: 1.25;
+	}
+
+	.blog-posts__coverage {
+		display: grid;
+		flex: 0 0 auto;
+		margin: 0;
+		text-align: right;
+	}
+
+	.blog-posts__coverage strong {
+		font-family: var(--font-mono);
+		font-size: 1.25rem;
+		line-height: 1.2;
+	}
+
+	.blog-posts__coverage span {
+		color: var(--text-3);
+		font-size: 0.8125rem;
+	}
+
+	.blog-posts__intro {
+		max-width: 50rem;
+		margin: 1.25rem 0 1.75rem;
+		color: var(--text-2);
+		font-size: 1rem;
+		line-height: 1.85;
+	}
+
+	.blog-posts__list {
+		margin: 0;
+		border-top: 1px solid var(--border);
+		padding: 0;
+		list-style: none;
+	}
+
+	.blog-posts__empty {
+		margin: 0;
+		border-top: 1px solid var(--border);
+		border-bottom: 1px solid var(--border);
+		padding: 1.5rem 0;
+		color: var(--text-3);
+	}
+
+	@media (max-width: 720px) {
+		.blog-posts__header {
+			align-items: start;
+			flex-direction: column;
+			gap: 1rem;
+		}
+
+		.blog-posts__coverage {
+			display: flex;
+			align-items: baseline;
+			gap: 0.65rem;
+			text-align: left;
+		}
+	}
+</style>

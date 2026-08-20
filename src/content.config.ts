@@ -13,6 +13,21 @@ const sourceSchema = z.object({
 const cloudSchema = z.enum(['gcp', 'azure']);
 const themeSchema = z.enum(['web', 'container', 'network', 'data']);
 
+const blogPosts = defineCollection({
+	loader: glob({
+		pattern: '**/*.md',
+		base: './src/content/blog',
+		generateId: ({ entry }) => entry.replace(/\.md$/, ''),
+	}),
+	schema: z.object({
+		title: z.string().min(1),
+		description: z.string().min(1),
+		publishedAt: z.coerce.date(),
+		tags: z.array(z.string().trim().min(1)).min(1),
+		draft: z.boolean().default(false),
+	}),
+});
+
 const architectureDetails = defineCollection({
 	loader: glob({
 		pattern: '**/*.md',
@@ -41,4 +56,5 @@ const architectureDetails = defineCollection({
 
 export const collections = {
 	architectureDetails,
+	blogPosts,
 };
