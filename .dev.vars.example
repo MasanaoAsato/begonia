@@ -1,0 +1,8 @@
+# Cloudflare account that owns the Web Analytics site.
+CLOUDFLARE_ACCOUNT_ID=
+
+# API token with the minimum read permission required for Web Analytics GraphQL.
+CLOUDFLARE_API_TOKEN=
+
+# Web Analytics site tag configured for the deployed blog.
+CLOUDFLARE_WEB_ANALYTICS_SITE_TAG=

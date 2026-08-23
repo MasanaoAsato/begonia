@@ -7,9 +7,14 @@
 	},
 	"scripts": {
 		"dev": "astro dev",
+		"dev:worker": "astro build && wrangler dev",
 		"build": "astro build",
 		"preview": "astro preview",
 		"astro": "astro",
+		"db:migrate:local": "wrangler d1 migrations apply BLOG_DB --local",
+		"db:migrate:remote": "wrangler d1 migrations apply BLOG_DB --remote",
+		"deploy": "astro build && wrangler deploy",
+		"types:worker": "wrangler types",
 		"check": "biome check .",
 		"format": "biome format --write .",
 		"format:check": "biome format .",
@@ -19,6 +24,7 @@
 		"astro": "^7.2.2"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.5.8"
+		"@biomejs/biome": "2.5.8",
+		"wrangler": "^4.124.0"
 	}
 }

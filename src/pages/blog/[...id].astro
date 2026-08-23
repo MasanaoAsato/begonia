@@ -1,5 +1,6 @@
 ---
 import { getCollection, render } from 'astro:content';
+import BlogEngagement from '../../components/blog/BlogEngagement.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import {
 	type BlogPostEntry,
@@ -53,6 +54,8 @@ const publishedDate = formatBlogPostDate(entry.data.publishedAt);
 				<h1>{entry.data.title}</h1>
 				<p class="blog-post__intro">{entry.data.description}</p>
 			</header>
+
+			<BlogEngagement postId={entry.id} />
 
 			<div class="blog-post__body">
 				<div class="blog-post__prose">

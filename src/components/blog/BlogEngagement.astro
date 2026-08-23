@@ -1,0 +1,163 @@
+---
+interface Props {
+	postId: string;
+}
+
+const { postId } = Astro.props;
+---
+
+<section
+	class="blog-engagement"
+	data-blog-engagement
+	data-post-id={postId}
+	aria-label="記事への反応"
+>
+	<div class="blog-engagement__content">
+		<div>
+			<p class="blog-engagement__eyebrow">この記事への反応</p>
+			<dl class="blog-engagement__stats">
+				<div class="blog-engagement__metric">
+					<dt><span aria-hidden="true">👁</span> 閲覧数</dt>
+					<dd data-engagement-views>--</dd>
+				</div>
+				<div class="blog-engagement__metric">
+					<dt><span aria-hidden="true">♡</span> いいね</dt>
+					<dd data-engagement-likes>--</dd>
+				</div>
+			</dl>
+		</div>
+
+		<button
+			type="button"
+			class="blog-engagement__like"
+			data-engagement-like
+			aria-pressed="false"
+			disabled
+		>
+			<span class="blog-engagement__like-icon" data-engagement-like-icon aria-hidden="true">♡</span>
+			<span data-engagement-like-label>いいねする</span>
+		</button>
+	</div>
+
+	<p class="blog-engagement__status" data-engagement-status role="status" aria-live="polite"></p>
+</section>
+
+<script src="../../scripts/blog-engagement.ts"></script>
+
+<style>
+	.blog-engagement {
+		max-width: 44rem;
+		margin: 0 auto 2.75rem;
+		border-top: 1px solid var(--border);
+		padding-top: 1.35rem;
+	}
+
+	.blog-engagement__content {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: end;
+		justify-content: space-between;
+		gap: 1.25rem 2rem;
+	}
+
+	.blog-engagement__eyebrow {
+		margin: 0 0 0.65rem;
+		color: var(--text-3);
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+	}
+
+	.blog-engagement__stats {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 1.25rem;
+		margin: 0;
+	}
+
+	.blog-engagement__metric {
+		display: flex;
+		align-items: baseline;
+		gap: 0.45rem;
+		min-width: 7rem;
+	}
+
+	.blog-engagement__metric dt {
+		color: var(--text-2);
+		font-size: 0.875rem;
+	}
+
+	.blog-engagement__metric dd {
+		margin: 0;
+		color: var(--text);
+		font-family: var(--font-mono);
+		font-size: 1.1rem;
+		font-variant-numeric: tabular-nums;
+		font-weight: 700;
+	}
+
+	.blog-engagement__like {
+		display: inline-flex;
+		min-height: 2.75rem;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		border: 1px solid var(--text);
+		border-radius: var(--radius);
+		background: var(--surface);
+		padding: 0.55rem 0.9rem;
+		color: var(--text);
+		font: inherit;
+		font-size: 0.9rem;
+		font-weight: 700;
+		cursor: pointer;
+	}
+
+	.blog-engagement__like:hover:not(:disabled) {
+		background: var(--accent-bg);
+	}
+
+	.blog-engagement__like[aria-pressed='true'] {
+		border-color: var(--gcp);
+		background: var(--gcp-bg);
+		color: var(--text);
+	}
+
+	.blog-engagement__like:disabled {
+		cursor: not-allowed;
+		opacity: 0.65;
+	}
+
+	.blog-engagement__like-icon {
+		font-size: 1.3rem;
+		line-height: 1;
+	}
+
+	.blog-engagement__status {
+		min-height: 1.8em;
+		margin: 0.8rem 0 0;
+		color: var(--text-3);
+		font-size: 0.875rem;
+	}
+
+	.blog-engagement__status[data-state='error'] {
+		color: var(--text);
+	}
+
+	@media (max-width: 480px) {
+		.blog-engagement__content {
+			align-items: stretch;
+		}
+
+		.blog-engagement__like {
+			width: 100%;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.blog-engagement__like {
+			transition: none;
+		}
+	}
+</style>

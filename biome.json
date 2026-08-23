@@ -9,8 +9,11 @@
 		"ignoreUnknown": true,
 		"includes": [
 			"src/**/*",
+			"worker/**/*.ts",
+			"shared/**/*.ts",
 			"!src/content/architectures/**/*.svg",
 			"astro.config.mjs",
+			"wrangler.jsonc",
 			"tsconfig.json",
 			"package.json",
 			"biome.json"
