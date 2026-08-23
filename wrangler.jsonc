@@ -11,8 +11,8 @@
 	"d1_databases": [
 		{
 			"binding": "BLOG_DB",
-			"database_name": "cloud-architecture-lab",
-			"database_id": "REPLACE_WITH_D1_DATABASE_ID",
+			"database_name": "d1-begonia-blog",
+			"database_id": "14de64f7-2609-442f-ba12-02d347f2bcf3",
 			"migrations_dir": "migrations"
 		}
 	],
